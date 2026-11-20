@@ -3,7 +3,7 @@ import { statusTone } from '../../design-system/utils'
 import { useAppState } from '../../stores/store'
 import { useT } from '../../i18n'
 
-const STATE_TONE = { suggested: 'cyan', pending_approval: 'warn', approved: 'ok', rejected: 'bad', executed: 'ok' } as const
+const STATE_TONE = { suggested: 'accent', pending_approval: 'warn', approved: 'ok', rejected: 'bad', executed: 'ok' } as const
 
 export function Audit() {
   const t = useT()

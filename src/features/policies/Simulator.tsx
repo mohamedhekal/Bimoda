@@ -44,7 +44,7 @@ export function PolicySimulator() {
   }
 
   return (
-    <Card title={t('What-if policy simulator')} action={<Badge tone="cyan">{t('draft only, nothing is saved')}</Badge>}>
+    <Card title={t('What-if policy simulator')} action={<Badge tone="accent">{t('draft only, nothing is saved')}</Badge>}>
       <p className="text-xs text-muted">
         {t(
           'Change a draft below and compare how the 40 synthetic scenarios would be decided under the current policy and under the draft. Case data and the live policy are not touched.',

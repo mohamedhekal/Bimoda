@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { RouteGlyph } from '../../design-system/brand'
 import { engine } from '../../ai/engineInstance'
 import { defaultPreference } from '../../ai/hybrid-engine/engine'
 import { generateInsights, type FeatureResult } from '../../ai/features'
@@ -33,10 +34,6 @@ export function Dashboard() {
   const stats = useMemo(() => computeObservedStats({ conversations, orders, approvals, audit, runs, range }), [approvals, audit, runs, range])
   const needs = conversations.filter((c) => c.status === 'needs_review').sort((a, b) => PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority])
   const byType = Object.entries(stats.byType).map(([name, cases]) => ({ name: name.replaceAll('_', ' '), cases }))
-  const sourceData = [
-    { name: 'On-device', value: stats.runs.onDevice, color: 'var(--ok)' },
-    { name: 'Cloud', value: stats.runs.cloud, color: 'var(--violet)' },
-  ]
 
   const runInsights = async () => {
     const ctl = new AbortController()
@@ -97,7 +94,7 @@ export function Dashboard() {
           title={t('Needs attention')}
           className="lg:col-span-2"
           action={
-            <Link to="/app/workspace" className="text-xs text-cyan underline">
+            <Link to="/app/workspace" className="text-xs text-accentink underline">
               {t('Open workspace')}
             </Link>
           }
@@ -118,22 +115,35 @@ export function Dashboard() {
           {stats.runs.onDevice + stats.runs.cloud === 0 ? (
             <p className="text-sm text-muted">{t('No successful runs in this range. Run an analysis in the Workspace or the Hybrid AI Lab.')}</p>
           ) : (
-            <div className="h-44" role="img" aria-label={`On-device ${stats.runs.onDevice}, cloud ${stats.runs.cloud}`}>
-              <ResponsiveContainer>
-                <PieChart>
-                  <Pie data={sourceData} dataKey="value" nameKey="name" innerRadius={40} outerRadius={70}>
-                    {sourceData.map((d) => (
-                      <Cell key={d.name} fill={d.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
+            <div role="img" aria-label={`On-device ${stats.runs.onDevice}, cloud ${stats.runs.cloud}`}>
+              <div className="flex h-12 overflow-hidden rounded-md text-ink">
+                {stats.runs.onDevice > 0 && <div className="bg-ink" style={{ flexGrow: stats.runs.onDevice }} />}
+                {stats.runs.cloud > 0 && (
+                  <div
+                    className="route-dashed"
+                    style={{
+                      flexGrow: stats.runs.cloud,
+                      backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 7px, color-mix(in srgb, currentColor 35%, transparent) 7px 9px)',
+                    }}
+                  />
+                )}
+              </div>
+              <dl className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <dt className="flex items-center gap-1.5 text-xs text-muted">
+                    <RouteGlyph kind="device" /> {t('On-device')}
+                  </dt>
+                  <dd className="figure text-2xl">{nf.format(stats.runs.onDevice)}</dd>
+                </div>
+                <div>
+                  <dt className="flex items-center gap-1.5 text-xs text-muted">
+                    <RouteGlyph kind="cloud" /> {t('Cloud')}
+                  </dt>
+                  <dd className="figure text-2xl">{nf.format(stats.runs.cloud)}</dd>
+                </div>
+              </dl>
             </div>
           )}
-          <p className="text-xs text-muted">
-            On-device: {stats.runs.onDevice} · Cloud: {stats.runs.cloud}
-          </p>
         </Card>
       </div>
 
@@ -145,7 +155,7 @@ export function Dashboard() {
               <XAxis dataKey="name" stroke="var(--muted)" fontSize={11} />
               <YAxis allowDecimals={false} stroke="var(--muted)" fontSize={11} />
               <Tooltip contentStyle={{ background: 'var(--surface)', border: '1px solid var(--line)' }} />
-              <Bar dataKey="cases" fill="var(--cyan)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="cases" fill="var(--accent)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -174,7 +184,7 @@ export function Dashboard() {
             {insights.ok ? (
               <>
                 <section>
-                  <h3 className="text-xs font-semibold uppercase text-muted">{t('Patterns')}</h3>
+                  <h3 className="text-sm font-semibold text-ink">{t('Patterns')}</h3>
                   <ul className="list-disc ps-5">
                     {insights.data.patterns.map((x) => (
                       <li key={x}>{x}</li>
@@ -182,7 +192,7 @@ export function Dashboard() {
                   </ul>
                 </section>
                 <section>
-                  <h3 className="text-xs font-semibold uppercase text-muted">{t('Suggested process improvements')}</h3>
+                  <h3 className="text-sm font-semibold text-ink">{t('Suggested process improvements')}</h3>
                   <ul className="list-disc ps-5">
                     {insights.data.suggestions.map((x) => (
                       <li key={x}>{x}</li>
@@ -191,7 +201,7 @@ export function Dashboard() {
                 </section>
                 {insights.data.limitations.length > 0 && (
                   <section>
-                    <h3 className="text-xs font-semibold uppercase text-muted">{t('Limitations')}</h3>
+                    <h3 className="text-sm font-semibold text-ink">{t('Limitations')}</h3>
                     <ul className="list-disc ps-5 text-muted">
                       {insights.data.limitations.map((x) => (
                         <li key={x}>{x}</li>

@@ -2,6 +2,7 @@ import { planRoute } from '../../ai/hybrid-engine/route'
 import { countAiEndpointRequests } from '../../ai/hybrid-engine/engine'
 import type { EngineResult, InferencePreference, PrivacyMode } from '../../ai/hybrid-engine/types'
 import { redact, type KnownEntities } from '../../ai/privacy/redact'
+import { RouteGlyph } from '../../design-system/brand'
 import { Badge, Card } from '../../design-system/ui'
 import { rcBool } from '../../firebase/remoteConfig'
 import { useRcInfo } from '../../firebase/useRcInfo'
@@ -28,10 +29,10 @@ export function PrivacyEvidence({ text, entities, last }: { text: string; entiti
   const rec = last?.record
 
   return (
-    <Card title={t('Privacy Evidence')} action={<Badge tone="cyan">{t('same code path as the engine')}</Badge>}>
+    <Card title={t('Privacy Evidence')} action={<Badge tone="accent">{t('same code path as the engine')}</Badge>}>
       <div className="space-y-5 text-sm">
         <section>
-          <h3 className="text-xs font-semibold uppercase text-muted">{t('Routing plan per privacy mode')}</h3>
+          <h3 className="text-sm font-semibold text-ink">{t('Routing plan per privacy mode')}</h3>
           <div className="mt-2 overflow-x-auto">
             <table className="w-full min-w-[480px] text-start text-xs">
               <caption className="sr-only">{t('What each privacy mode allows for each test')}</caption>
@@ -67,9 +68,13 @@ export function PrivacyEvidence({ text, entities, last }: { text: string; entiti
                           {plan.blocked ? (
                             <Badge tone="bad">{t('Blocked')}</Badge>
                           ) : !plan.mayReachCloud ? (
-                            <Badge tone="ok">{t('Stays on device')}</Badge>
+                            <span className="inline-flex items-center gap-1.5 rounded-md bg-ink px-2 py-0.5 text-xs font-semibold text-bg">
+                              <RouteGlyph kind="device" /> {t('Stays on device')}
+                            </span>
                           ) : (
-                            <Badge tone="violet">{plan.redact ? t('Cloud-capable, redacted') : t('Cloud-capable, consent on')}</Badge>
+                            <span className="inline-flex items-center gap-1.5 rounded-md border-2 border-dashed border-ink/70 px-2 py-0.5 text-xs font-semibold">
+                              <RouteGlyph kind="cloud" /> {plan.redact ? t('Cloud-capable, redacted') : t('Cloud-capable, consent on')}
+                            </span>
                           )}
                           {plan.effective !== p && <div className="mt-0.5 text-[11px] text-muted">→ {plan.effective}</div>}
                         </td>
@@ -87,7 +92,7 @@ export function PrivacyEvidence({ text, entities, last }: { text: string; entiti
         </section>
 
         <section>
-          <h3 className="text-xs font-semibold uppercase text-muted">{t('Redaction preview (what could leave the device)')}</h3>
+          <h3 className="text-sm font-semibold text-ink">{t('Redaction preview (what could leave the device)')}</h3>
           <pre className="mt-2 whitespace-pre-wrap rounded-md border border-line bg-bg p-2 text-xs">{redacted.text}</pre>
           <p className="mt-1 text-xs text-muted">
             {counts.length === 0 ? t('Nothing to redact in this text.') : counts.map(([k, n]) => `${k} × ${n}`).join(' · ')}
@@ -95,7 +100,7 @@ export function PrivacyEvidence({ text, entities, last }: { text: string; entiti
         </section>
 
         <section>
-          <h3 className="text-xs font-semibold uppercase text-muted">{t('Observations from the last run')}</h3>
+          <h3 className="text-sm font-semibold text-ink">{t('Observations from the last run')}</h3>
           {!rec ? (
             <p className="mt-2 text-xs text-muted">{t('Run a test above to see observations.')}</p>
           ) : (

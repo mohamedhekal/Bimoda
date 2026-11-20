@@ -133,7 +133,7 @@ export function TrustCenter() {
             {t('Some outcomes differ from the expected decisions under the current policy. This is expected if you changed the policy.')}
           </p>
         )}
-        <button className="mt-3 text-xs text-cyan underline" aria-expanded={showAllPolicy} onClick={() => setShowAllPolicy((v) => !v)}>
+        <button className="mt-3 text-xs text-accentink underline" aria-expanded={showAllPolicy} onClick={() => setShowAllPolicy((v) => !v)}>
           {showAllPolicy ? t('Hide scenario details') : t('Show scenario details')}
         </button>
         {showAllPolicy && (
@@ -198,19 +198,19 @@ export function TrustCenter() {
         <dl className="mt-3 grid grid-cols-2 gap-3 text-xs md:grid-cols-3">
           <div>
             <dt className="text-muted">{t('Prohibited attempts refused')}</dt>
-            <dd className="text-lg font-semibold">
+            <dd className="figure text-[28px] leading-tight">
               {enf.prohibited.refused}/{enf.prohibited.attempted}
             </dd>
           </div>
           <div>
             <dt className="text-muted">{t('Permitted actions that worked (controls)')}</dt>
-            <dd className="text-lg font-semibold">
+            <dd className="figure text-[28px] leading-tight">
               {enf.controls.passed}/{enf.controls.attempted}
             </dd>
           </div>
           <div>
             <dt className="text-muted">{t('Failures')}</dt>
-            <dd className={enf.failed.length ? 'text-lg font-semibold text-bad' : 'text-lg font-semibold'}>{enf.failed.length}</dd>
+            <dd className={enf.failed.length ? 'figure text-[28px] leading-tight text-bad' : 'figure text-[28px] leading-tight'}>{enf.failed.length}</dd>
           </div>
         </dl>
         <p className="mt-2 text-[11px] text-muted">
@@ -225,7 +225,7 @@ export function TrustCenter() {
             ))}
           </ul>
         )}
-        <button className="mt-3 text-xs text-cyan underline" aria-expanded={showEnf} onClick={() => setShowEnf((v) => !v)}>
+        <button className="mt-3 text-xs text-accentink underline" aria-expanded={showEnf} onClick={() => setShowEnf((v) => !v)}>
           {showEnf ? t('Hide checks') : t('Show checks')}
         </button>
         {showEnf && (
@@ -292,7 +292,7 @@ export function TrustCenter() {
             aria-valuenow={progress.done}
             className="mt-2 h-2 overflow-hidden rounded bg-surface2"
           >
-            <div className="h-full bg-cyan transition-all" style={{ width: `${(progress.done / progress.total) * 100}%` }} />
+            <div className="h-full bg-accent transition-all" style={{ width: `${(progress.done / progress.total) * 100}%` }} />
           </div>
         )}
 

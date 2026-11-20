@@ -113,7 +113,7 @@ export function Lab() {
                 aria-valuemax={100}
                 className="h-2 overflow-hidden rounded bg-surface2"
               >
-                <div className="h-full bg-cyan transition-all" style={{ width: `${Math.round(progress * 100)}%` }} />
+                <div className="h-full bg-accent transition-all" style={{ width: `${Math.round(progress * 100)}%` }} />
               </div>
             )}
             <Button onClick={enableLocal} disabled={!isFirebaseConfigured || dev.state === 'downloading' || dev.state === 'unsupported'}>
@@ -139,7 +139,7 @@ export function Lab() {
           </div>
         </Card>
 
-        <Card title={t('Synthetic case')} className="lg:col-span-2" action={<Badge tone="cyan">{LAB_CASE.title}</Badge>}>
+        <Card title={t('Synthetic case')} className="lg:col-span-2" action={<Badge tone="accent">{LAB_CASE.title}</Badge>}>
           <label className="sr-only" htmlFor="lab-text">
             {t('Customer message')}
           </label>
@@ -178,7 +178,7 @@ export function Lab() {
                   className={cx(
                     'rounded-lg border px-2.5 py-1.5',
                     state === 'done' && 'border-ok/60 bg-ok/10 text-ok',
-                    state === 'active' && 'pulse border-cyan bg-cyan/10 text-cyan',
+                    state === 'active' && 'pulse border-accent bg-accent/10 text-accentink',
                     state === 'blocked' && 'border-bad/60 bg-bad/10 text-bad',
                     state === 'idle' && 'border-line text-muted',
                   )}
@@ -214,7 +214,7 @@ export function Lab() {
               <div className="mt-2 flex flex-wrap gap-1">
                 <Badge>{test.pref}</Badge>
                 {running === test.key && (
-                  <Badge tone="cyan">
+                  <Badge tone="accent">
                     <span className="pulse">running…</span>
                   </Badge>
                 )}

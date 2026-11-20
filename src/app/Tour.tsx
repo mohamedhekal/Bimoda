@@ -73,9 +73,9 @@ export function Tour() {
       role="dialog"
       aria-label="Demo tour"
       onKeyDown={(e) => e.key === 'Escape' && done()}
-      className="fixed bottom-20 end-4 z-40 w-[min(22rem,calc(100vw-2rem))] rounded-xl border border-cyan/60 bg-surface p-4 shadow-2xl md:bottom-6"
+      className="fixed bottom-20 end-4 z-40 w-[min(22rem,calc(100vw-2rem))] rounded-xl border border-accent/60 bg-surface p-4 shadow-2xl md:bottom-6"
     >
-      <p className="text-[11px] uppercase tracking-wider text-cyan">
+      <p className="text-xs font-medium text-accentink">
         Demo tour · {step + 1} of {STEPS.length}
       </p>
       <h2 className="mt-1 font-semibold">{s.title}</h2>

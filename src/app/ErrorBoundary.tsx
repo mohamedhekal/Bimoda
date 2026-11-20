@@ -16,7 +16,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, State> {
         <h1 className="text-lg font-semibold">Something went wrong</h1>
         <p className="mt-2 text-sm text-muted">The page hit an unexpected error. Your demo data is stored locally and was not changed.</p>
         <p className="mt-2 break-words text-xs text-muted">{this.state.error.message}</p>
-        <button className="mt-4 rounded-lg bg-cyan px-4 py-2 text-sm font-semibold text-[#06101c]" onClick={() => location.assign('/app')}>
+        <button className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-onaccent" onClick={() => location.assign('/app')}>
           Back to Mission Control
         </button>
       </div>

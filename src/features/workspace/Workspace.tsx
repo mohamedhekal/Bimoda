@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState, type ReactNode } from 'react'
 import { AlertTriangle } from 'lucide-react'
 import { engine } from '../../ai/engineInstance'
 import { defaultPreference } from '../../ai/hybrid-engine/engine'
@@ -9,7 +9,7 @@ import { computeOrderTotals, formatMoney } from '../../domain/pricing'
 import { evaluatePolicy, type PolicyEvaluation } from '../../domain/policy'
 import { returnStage, shippingSignals } from '../../domain/signals'
 import type { CaseStatus, CaseType, Conversation, Priority, ProposedActionKind } from '../../domain/types'
-import { Badge, Card } from '../../design-system/ui'
+import { Badge, DecisionBadge } from '../../design-system/ui'
 import { cx } from '../../design-system/utils'
 import { useAppState } from '../../stores/store'
 import { submitProposal } from './approvals'
@@ -29,8 +29,8 @@ const TYPE_LABEL: Record<CaseType, string> = {
   general: 'General',
 }
 const STATUS_LABEL: Record<CaseStatus, string> = { open: 'Open', needs_review: 'Needs review', waiting_customer: 'Waiting on customer', resolved: 'Resolved' }
-const PRIORITY_TONE = { low: 'neutral', medium: 'cyan', high: 'warn', critical: 'bad' } as const
-const SEVERITY_TONE = { info: 'cyan', warn: 'warn', critical: 'bad' } as const
+const PRIORITY_TONE = { low: 'neutral', medium: 'accent', high: 'warn', critical: 'bad' } as const
+const SEVERITY_TONE = { info: 'accent', warn: 'warn', critical: 'bad' } as const
 
 interface Filters {
   type: 'all' | CaseType
@@ -56,6 +56,34 @@ function FilterSelect<T extends string>({ label, value, onChange, options }: { l
         ))}
       </select>
     </label>
+  )
+}
+
+/** A ruled section of the paper docket. */
+function Sheet({ title, action, children }: { title: ReactNode; action?: ReactNode; children: ReactNode }) {
+  return (
+    <section className="docket-rule pt-4">
+      <header className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-[17px] font-semibold">{title}</h2>
+        {action}
+      </header>
+      {children}
+    </section>
+  )
+}
+
+/** Decorative label barcode derived from the order reference (not scannable). */
+function Barcode({ value }: { value: string }) {
+  const bars = [...value].flatMap((ch) => {
+    const c = ch.charCodeAt(0)
+    return [1 + (c % 3), 1 + ((c >> 2) % 2), 1 + ((c >> 3) % 3)]
+  })
+  return (
+    <div className="flex h-8 items-stretch gap-[2px]" aria-hidden>
+      {bars.slice(0, 42).map((w, i) => (
+        <span key={i} className="bg-paperink" style={{ width: w }} />
+      ))}
+    </div>
   )
 }
 
@@ -86,6 +114,7 @@ export function Workspace() {
   const signals = shippingSignals(order, convo)
   const ret = order.returnCase ? returnStage(order.returnCase) : null
   const pref = defaultPreference(settings.privacyMode)
+  const latestEval = evals[selectedId]?.[0]
   const list = useMemo(
     () =>
       conversations.filter(
@@ -149,7 +178,7 @@ export function Workspace() {
       <h1 className="sr-only">{t('Operations workspace')}</h1>
 
       {/* Queue */}
-      <div className="min-w-0 space-y-3 lg:col-start-1 lg:row-span-2 lg:row-start-1">
+      <div className="min-w-0 space-y-3 lg:col-start-1 lg:row-span-3 lg:row-start-1 xl:row-span-2">
         <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-2">
           <FilterSelect
             label={t('Type')}
@@ -200,7 +229,7 @@ export function Workspace() {
                 aria-current={c.id === selectedId}
                 className={cx(
                   'w-full rounded-xl border p-3 text-start text-sm',
-                  c.id === selectedId ? 'border-cyan bg-surface2' : 'border-line bg-surface hover:bg-surface2',
+                  c.id === selectedId ? 'border-accent bg-surface2' : 'border-line bg-surface hover:bg-surface2',
                 )}
               >
                 <div className="flex items-center justify-between gap-2">
@@ -221,142 +250,148 @@ export function Workspace() {
 
       {/* Case */}
       <div ref={caseRef} className="min-w-0 space-y-4 lg:col-start-2 lg:row-start-1">
-        <Card
-          title={
-            <>
-              Case {convo.id} · {order.id}
-            </>
-          }
-          action={<Badge tone={PRIORITY_TONE[convo.priority]}>{t(convo.priority)}</Badge>}
-        >
-          <div className="space-y-2">
-            {convo.messages.map((m, i) => (
-              <div key={i} className={cx('max-w-[90%] rounded-xl px-3 py-2 text-sm', m.from === 'customer' ? 'bg-surface2' : 'ms-auto bg-cyan/15')}>
-                <div className="mb-0.5 text-[11px] uppercase text-muted">
-                  {m.from === 'customer' ? customer.displayName : 'Agent'} · {m.at.slice(0, 10)}
-                </div>
-                {/* Rendered as plain text: customer content is untrusted */}
-                {m.text}
+        <article className="docket space-y-5 p-5 pt-7 md:p-7 md:pt-8">
+          <section>
+            <header className="flex flex-wrap items-end justify-between gap-3">
+              <h2 className="display text-[40px] md:text-[52px]">
+                <span className="label-field block text-[13px] font-normal [font-stretch:100%]">
+                  Case {convo.id} <span className="sr-only">·</span>
+                </span>
+                {order.id}
+              </h2>
+              <div className="flex flex-col items-end gap-1.5">
+                <Barcode value={order.id + (order.trackingRef ?? '')} />
+                <span className="label-field font-mono">{order.trackingRef ?? t(TYPE_LABEL[convo.type])}</span>
               </div>
-            ))}
-          </div>
-        </Card>
-
-        <Card title={t('Order')}>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-1 text-sm">
-              {order.items.map((i) => (
-                <div key={i.sku} className="flex justify-between gap-2">
-                  <span>
-                    {i.qty}× {i.name} <span className="text-muted">({i.variant})</span>
-                  </span>
-                  <span>{money(i.unitPriceCents * i.qty)}</span>
+            </header>
+            <div className="mt-3 flex min-h-12 flex-wrap items-center gap-1.5">
+              <Badge tone={PRIORITY_TONE[convo.priority]}>{t(convo.priority)}</Badge>
+              <Badge>{t(TYPE_LABEL[convo.type])}</Badge>
+              <Badge>{order.fulfillment}</Badge>
+              {latestEval && (
+                <span className="ms-auto pe-2" aria-hidden>
+                  <DecisionBadge key={latestEval.timestamp} decision={latestEval.decision} large animate />
+                </span>
+              )}
+            </div>
+            <div className="mt-4 space-y-3">
+              {convo.messages.map((m, i) => (
+                <div key={i} className={cx('border-s-[3px] ps-3 text-[15px] leading-relaxed', m.from === 'customer' ? 'border-paperink' : 'border-accent')}>
+                  <div className="label-field mb-0.5">
+                    {m.from === 'customer' ? customer.displayName : 'Agent'} · {m.at.slice(0, 10)}
+                  </div>
+                  {/* Rendered as plain text: customer content is untrusted */}
+                  {m.text}
                 </div>
               ))}
-              <hr className="border-line" />
-              <div className="flex justify-between text-muted">
-                <span>Subtotal</span>
-                <span>{money(totals.subtotalCents)}</span>
-              </div>
-              {totals.discountCents > 0 && (
+            </div>
+          </section>
+
+          <Sheet title={t('Order')}>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-1 text-sm">
+                {order.items.map((i) => (
+                  <div key={i.sku} className="flex justify-between gap-2">
+                    <span>
+                      {i.qty}× {i.name} <span className="text-muted">({i.variant})</span>
+                    </span>
+                    <span>{money(i.unitPriceCents * i.qty)}</span>
+                  </div>
+                ))}
+                <hr className="border-line" />
                 <div className="flex justify-between text-muted">
-                  <span>Discount</span>
-                  <span>−{money(totals.discountCents)}</span>
+                  <span>Subtotal</span>
+                  <span>{money(totals.subtotalCents)}</span>
                 </div>
-              )}
-              <div className="flex justify-between text-muted">
-                <span>Shipping {totals.freeShippingApplied && '(free shipping applied)'}</span>
-                <span>{money(totals.shippingFeeCents)}</span>
-              </div>
-              <div className="flex justify-between font-semibold">
-                <span>Total</span>
-                <span>{money(totals.totalCents)}</span>
-              </div>
-              <div className="flex justify-between text-muted">
-                <span>Due on delivery</span>
-                <span>{money(totals.amountDueCents)}</span>
-              </div>
-              {order.statedTotalCents !== undefined && order.statedTotalCents !== totals.totalCents && (
-                <p role="alert" className="mt-2 flex gap-2 rounded-lg border border-warn/50 bg-warn/10 p-2 text-xs text-warn">
-                  <AlertTriangle size={14} className="mt-0.5 shrink-0" aria-hidden /> Confirmation message stated {money(order.statedTotalCents)} but the
-                  calculated total is {money(totals.totalCents)}.
-                </p>
-              )}
-            </div>
-            <div className="space-y-2 text-sm">
-              <div className="flex flex-wrap gap-1">
-                <Badge tone="cyan">{order.fulfillment}</Badge>
-                <Badge>{order.paymentStatus}</Badge>
-                {!order.address.complete && <Badge tone="warn">address incomplete</Badge>}
-              </div>
-              <div className="text-xs text-muted">{order.carrier ? `${order.carrier} · ${order.trackingRef}` : 'Not yet shipped'}</div>
-              {order.shipmentEvents.length > 0 && (
-                <ol className="space-y-1 border-s border-line ps-3 text-xs" aria-label="Shipment timeline">
-                  {order.shipmentEvents.map((e, i) => (
-                    <li key={i}>
-                      <span className="font-medium">{e.status}</span>{' '}
-                      <span className="text-muted">
-                        · {e.note} · {e.at.slice(0, 10)}
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-              )}
-              {ret && order.returnCase && (
-                <div className="rounded-lg border border-line p-2 text-xs">
-                  <div className="flex items-center justify-between gap-2">
-                    <b>{ret.label}</b>
-                    <Badge tone={ret.physicallyReceived ? 'ok' : 'warn'}>{ret.physicallyReceived ? 'received' : 'not received'}</Badge>
+                {totals.discountCents > 0 && (
+                  <div className="flex justify-between text-muted">
+                    <span>Discount</span>
+                    <span>−{money(totals.discountCents)}</span>
                   </div>
-                  <p className="mt-1 text-muted">
-                    Pickup: {order.returnCase.pickup} · Warehouse receipt: {order.returnCase.warehouseReceipt} · Settlement: {order.returnCase.settlement}
+                )}
+                <div className="flex justify-between text-muted">
+                  <span>Shipping {totals.freeShippingApplied && '(free shipping applied)'}</span>
+                  <span>{money(totals.shippingFeeCents)}</span>
+                </div>
+                <div className="flex justify-between font-semibold">
+                  <span>Total</span>
+                  <span>{money(totals.totalCents)}</span>
+                </div>
+                <div className="flex justify-between text-muted">
+                  <span>Due on delivery</span>
+                  <span>{money(totals.amountDueCents)}</span>
+                </div>
+                {order.statedTotalCents !== undefined && order.statedTotalCents !== totals.totalCents && (
+                  <p role="alert" className="mt-2 flex gap-2 rounded-lg border border-warn/50 bg-warn/10 p-2 text-xs text-warn">
+                    <AlertTriangle size={14} className="mt-0.5 shrink-0" aria-hidden /> Confirmation message stated {money(order.statedTotalCents)} but the
+                    calculated total is {money(totals.totalCents)}.
                   </p>
-                  <p className="mt-1">{ret.caveat}</p>
+                )}
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex flex-wrap gap-1">
+                  <Badge tone="accent">{order.fulfillment}</Badge>
+                  <Badge>{order.paymentStatus}</Badge>
+                  {!order.address.complete && <Badge tone="warn">address incomplete</Badge>}
                 </div>
-              )}
-            </div>
-          </div>
-        </Card>
-
-        <Card title={t('Operational signals')} action={<Badge>{t('rule-based, no AI')}</Badge>}>
-          {signals.length === 0 ? (
-            <p className="text-xs text-muted">No shipping or order signals for this case.</p>
-          ) : (
-            <ul className="space-y-2">
-              {signals.map((s) => (
-                <li key={s.id} className="rounded-lg border border-line p-2 text-xs">
-                  <div className="flex items-center gap-2">
-                    <Badge tone={SEVERITY_TONE[s.severity]}>{s.severity}</Badge>
-                    <b>{s.title}</b>
+                <div className="text-xs text-muted">{order.carrier ? `${order.carrier} · ${order.trackingRef}` : 'Not yet shipped'}</div>
+                {order.shipmentEvents.length > 0 && (
+                  <ol className="space-y-1 border-s border-line ps-3 text-xs" aria-label="Shipment timeline">
+                    {order.shipmentEvents.map((e, i) => (
+                      <li key={i}>
+                        <span className="font-medium">{e.status}</span>{' '}
+                        <span className="text-muted">
+                          · {e.note} · {e.at.slice(0, 10)}
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+                {ret && order.returnCase && (
+                  <div className="rounded-lg border border-line p-2 text-xs">
+                    <div className="flex items-center justify-between gap-2">
+                      <b>{ret.label}</b>
+                      <Badge tone={ret.physicallyReceived ? 'ok' : 'warn'}>{ret.physicallyReceived ? 'received' : 'not received'}</Badge>
+                    </div>
+                    <p className="mt-1 text-muted">
+                      Pickup: {order.returnCase.pickup} · Warehouse receipt: {order.returnCase.warehouseReceipt} · Settlement: {order.returnCase.settlement}
+                    </p>
+                    <p className="mt-1">{ret.caveat}</p>
                   </div>
-                  <p className="mt-1 text-muted">{s.detail}</p>
-                </li>
-              ))}
-            </ul>
-          )}
-          {order.notes.length > 0 && (
-            <ul className="mt-2 list-disc ps-5 text-xs text-muted">
-              {order.notes.map((n) => (
-                <li key={n}>{n}</li>
-              ))}
-            </ul>
-          )}
-        </Card>
-        <DecisionGraph
-          nodes={buildDecisionTrace({
-            conversation: convo,
-            order,
-            analysis: analysis[selectedId],
-            evaluation: evals[selectedId]?.[0],
-            approvals: allApprovals.filter((x) => x.conversationId === selectedId),
-            role: settings.role,
-            signals,
-          })}
-        />
+                )}
+              </div>
+            </div>
+          </Sheet>
+
+          <Sheet title={t('Operational signals')} action={<Badge>{t('rule-based, no AI')}</Badge>}>
+            {signals.length === 0 ? (
+              <p className="text-xs text-muted">No shipping or order signals for this case.</p>
+            ) : (
+              <ul className="space-y-2">
+                {signals.map((s) => (
+                  <li key={s.id} className="rounded-lg border border-line p-2 text-xs">
+                    <div className="flex items-center gap-2">
+                      <Badge tone={SEVERITY_TONE[s.severity]}>{s.severity}</Badge>
+                      <b>{s.title}</b>
+                    </div>
+                    <p className="mt-1 text-muted">{s.detail}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {order.notes.length > 0 && (
+              <ul className="mt-2 list-disc ps-5 text-xs text-muted">
+                {order.notes.map((n) => (
+                  <li key={n}>{n}</li>
+                ))}
+              </ul>
+            )}
+          </Sheet>
+        </article>
       </div>
 
       {/* Intelligence */}
-      <div className="min-w-0 lg:col-start-2 lg:row-start-2 xl:col-start-3 xl:row-span-2 xl:row-start-1">
+      <div className="min-w-0 lg:col-start-2 lg:row-start-2 xl:col-start-3 xl:row-span-2 xl:row-start-1 xl:sticky xl:top-20 xl:self-start">
         <IntelligencePanel
           preference={pref}
           busy={busy}
@@ -376,6 +411,21 @@ export function Workspace() {
           onTryAction={setTryAction}
           onPropose={(a) => propose(a)}
           onRequestSend={() => propose('DRAFT_REPLY')}
+        />
+      </div>
+
+      {/* Why: the decision trace */}
+      <div className="min-w-0 lg:col-start-2 lg:row-start-3 xl:row-start-2">
+        <DecisionGraph
+          nodes={buildDecisionTrace({
+            conversation: convo,
+            order,
+            analysis: analysis[selectedId],
+            evaluation: evals[selectedId]?.[0],
+            approvals: allApprovals.filter((x) => x.conversationId === selectedId),
+            role: settings.role,
+            signals,
+          })}
         />
       </div>
     </div>

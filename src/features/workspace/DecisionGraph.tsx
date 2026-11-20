@@ -4,10 +4,10 @@ import { cx } from '../../design-system/utils'
 import type { TraceNode, TraceOrigin, TraceStatus } from '../../domain/trace'
 import { useT } from '../../i18n'
 
-const ORIGIN: Record<TraceOrigin, { label: string; tone: 'neutral' | 'violet' | 'cyan' | 'warn'; border: string }> = {
+const ORIGIN: Record<TraceOrigin, { label: string; tone: 'neutral' | 'violet' | 'info' | 'warn'; border: string }> = {
   customer: { label: 'Customer text (untrusted)', tone: 'neutral', border: 'border-s-muted' },
   model: { label: 'Model-generated', tone: 'violet', border: 'border-s-violet' },
-  deterministic: { label: 'Deterministic rule', tone: 'cyan', border: 'border-s-cyan' },
+  deterministic: { label: 'Deterministic rule', tone: 'info', border: 'border-s-info' },
   human: { label: 'Human decision', tone: 'warn', border: 'border-s-warn' },
 }
 const STATUS: Record<TraceStatus, { glyph: string; cls: string; label: string }> = {

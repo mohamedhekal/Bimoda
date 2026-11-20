@@ -3,7 +3,8 @@ import type { FeatureResult } from '../../ai/features'
 import type { ConversationAnalysis } from '../../ai/validation/schemas'
 import { canApprove, type PolicyEvaluation } from '../../domain/policy'
 import type { ProposedActionKind, Role } from '../../domain/types'
-import { Badge, Button, Card, DecisionBadge, Empty, SourceBadge } from '../../design-system/ui'
+import type { ReactNode } from 'react'
+import { Badge, Button, DecisionBadge, Empty, SourceBadge } from '../../design-system/ui'
 import type { ApprovalRecord } from '../../stores/store'
 import { execute, review } from './approvals'
 import { useT } from '../../i18n'
@@ -42,12 +43,30 @@ export interface PanelProps {
   onRequestSend: () => void
 }
 
+/** One step of the case flow: understand, check, reply, approve. The numbers are a real sequence. */
+function Step({ n, title, action, last, children }: { n: number; title: ReactNode; action?: ReactNode; last?: boolean; children: ReactNode }) {
+  return (
+    <section className={last ? 'relative ps-10' : 'relative pb-7 ps-10'}>
+      <span aria-hidden className="figure absolute start-0 top-0 grid h-7 w-7 place-items-center rounded-full bg-accent text-sm text-onaccent">
+        {n}
+      </span>
+      {!last && <span aria-hidden className="absolute bottom-1 start-[13px] top-9 w-0.5 rounded bg-line" />}
+      <header className="mb-2 flex min-h-7 flex-wrap items-center justify-between gap-2">
+        <h2 className="text-[17px] font-semibold">{title}</h2>
+        {action}
+      </header>
+      {children}
+    </section>
+  )
+}
+
 export function IntelligencePanel(p: PanelProps) {
   const t = useT()
   const a = p.analysis
   return (
-    <div className="space-y-4">
-      <Card
+    <div className="rounded-2xl border border-line/50 bg-surface p-5">
+      <Step
+        n={1}
         title={
           <span className="flex items-center gap-2">
             <Sparkles size={14} className="text-violet" aria-hidden /> {t('Bimoda Intelligence')}
@@ -74,7 +93,7 @@ export function IntelligencePanel(p: PanelProps) {
               <SourceBadge record={a.record} />
               <Badge>{a.record.durationMs} ms</Badge>
               <Badge>{a.record.privacyMode}</Badge>
-              {a.record.redactionApplied && <Badge tone="cyan">redacted ×{a.record.redactions}</Badge>}
+              {a.record.redactionApplied && <Badge tone="accent">redacted ×{a.record.redactions}</Badge>}
             </div>
             {a.ok ? (
               <>
@@ -132,9 +151,9 @@ export function IntelligencePanel(p: PanelProps) {
             )}
           </div>
         )}
-      </Card>
+      </Step>
 
-      <Card title={t('Policy check')}>
+      <Step n={2} title={t('Policy check')}>
         <div className="flex gap-2">
           <select
             aria-label="Action to evaluate"
@@ -176,9 +195,9 @@ export function IntelligencePanel(p: PanelProps) {
             </li>
           ))}
         </ul>
-      </Card>
+      </Step>
 
-      <Card title={t('Response composer')}>
+      <Step n={3} title={t('Response composer')}>
         <div className="flex flex-wrap gap-2 text-xs">
           <select
             aria-label="Tone"
@@ -220,9 +239,9 @@ export function IntelligencePanel(p: PanelProps) {
             )}
           </div>
         )}
-      </Card>
+      </Step>
 
-      <Card title={t('Approvals for this case')}>
+      <Step n={4} last title={t('Approvals for this case')}>
         {p.approvals.length === 0 ? (
           <p className="text-xs text-muted">Nothing proposed yet.</p>
         ) : (
@@ -233,7 +252,7 @@ export function IntelligencePanel(p: PanelProps) {
                 <li key={x.id} className="rounded-lg border border-line p-2 text-xs">
                   <div className="flex items-center justify-between gap-2">
                     <b>{x.label}</b>
-                    <Badge tone={x.state === 'executed' ? 'ok' : x.state === 'rejected' ? 'bad' : x.state === 'pending_approval' ? 'warn' : 'cyan'}>
+                    <Badge tone={x.state === 'executed' ? 'ok' : x.state === 'rejected' ? 'bad' : x.state === 'pending_approval' ? 'warn' : 'accent'}>
                       {x.state.replace('_', ' ')}
                     </Badge>
                   </div>
@@ -263,7 +282,7 @@ export function IntelligencePanel(p: PanelProps) {
             })}
           </ul>
         )}
-      </Card>
+      </Step>
     </div>
   )
 }

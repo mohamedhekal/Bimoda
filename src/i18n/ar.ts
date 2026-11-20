@@ -311,6 +311,28 @@ export const ar: Record<string, string> = {
   'Preference handed to the SDK': 'التفضيل المُمرَّر إلى الـ SDK',
   'Scope: the count uses the browser Resource Timing API for requests to the Gemini model endpoints. It is diagnostic evidence only: entries can be missing (buffer limits, blocked or failed requests, service workers) and it cannot see other tabs, so it is not proof of zero cloud requests. In Local Only the guarantee comes from the routing rule, not from this count: the engine hands the SDK only ONLY_ON_DEVICE, which per the Firebase documentation throws instead of falling back to the cloud (covered by unit tests at the engine and adapter boundaries). The Firebase SDK may still contact other Firebase services (App Check, Remote Config, Auth, Firestore).':
     'النطاق: العدّ يستخدم واجهة Resource Timing في المتصفح لطلبات نقاط نموذج Gemini. هو دليل تشخيصي فقط: قد تغيب إدخالات (حدود المخزن، طلبات محجوبة أو فاشلة، service workers) ولا يرى التبويبات الأخرى، فليس إثباتًا لانعدام الطلبات السحابية. في «محلي فقط» الضمان مصدره قاعدة التوجيه لا هذا العدّ: المحرك يمرّر للـ SDK الوضع ONLY_ON_DEVICE فقط، وهو بحسب توثيق Firebase يُخفق ولا يرجع للسحابة (مغطّى باختبارات وحدة عند حدّي المحرك والـ adapter). وقد يتصل الـ SDK بخدمات Firebase أخرى (App Check وRemote Config وAuth وFirestore).',
+  More: 'المزيد',
+  Theme: 'المظهر',
+  'Route this message yourself': 'وجّه هذه الرسالة بنفسك',
+  'This device': 'هذا الجهاز',
+  'Cloud model': 'النموذج السحابي',
+  'Full text, never leaves the browser': 'النص كاملًا، لا يغادر المتصفح',
+  'Not used in this mode': 'غير مستخدم في هذا الوضع',
+  'Only the taped-over version may be sent': 'لا تُرسل إلا النسخة المحجوبة',
+  'Blocked: nothing is sent': 'محجوب: لا يُرسل شيء',
+  'The change request arrives after dispatch, so the policy engine stamps it.': 'طلب التغيير وصل بعد الشحن، فيختمه محرك السياسات.',
+  'This preview runs the app’s real routing and redaction code. No AI model is called on this page.':
+    'هذه المعاينة تشغّل كود التوجيه والحجب الحقيقي في التطبيق. لا يُستدعى أي نموذج ذكاء اصطناعي في هذه الصفحة.',
+  'How a case moves': 'كيف تسير الحالة',
+  Understand: 'افهم',
+  'Check policy': 'افحص السياسة',
+  Reply: 'ردّ',
+  'Bimoda reads the conversation and the order, and says where the answer was produced: on this device or in the cloud.':
+    'يقرأ Bimoda المحادثة والطلب، ويذكر أين أُنتجت الإجابة: على هذا الجهاز أم في السحابة.',
+  'Fixed rules decide what is allowed. A shipped order stays locked, whatever the model suggests.':
+    'قواعد ثابتة تقرر المسموح. الطلب المشحون يبقى مقفلًا مهما اقترح النموذج.',
+  'It drafts the reply. Every amount comes from the order record, never from the model.': 'يصوغ الرد. كل مبلغ مصدره سجل الطلب، لا النموذج.',
+  'A person approves anything risky. Nothing real is sent or refunded in this demo.': 'شخص يوافق على أي إجراء خطر. لا يُرسل ولا يُستردّ شيء حقيقي في هذا العرض.',
   // language
   Language: 'اللغة',
   'AI output stays in English. Arabic is a beta of the interface only.': 'تبقى مخرجات الذكاء الاصطناعي بالإنجليزية. العربية نسخة تجريبية للواجهة فقط.',

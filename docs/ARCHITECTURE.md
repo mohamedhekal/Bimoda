@@ -11,7 +11,7 @@
 - **Remote Config** (`firebase/remoteConfig.ts`): `cloud_model`, `ai_timeout_ms` (clamped 1-300 s) and `cloud_inference_enabled` (operator kill switch that behaves like Local Only). In-code defaults apply until a fetch succeeds.
 - **i18n** (`src/i18n`): English strings are the keys; `ar.ts` holds the Arabic (beta) interface translations; a unit test fails if a `t('…')` literal has no translation. Logical CSS utilities + `dir="rtl"` handle mirroring; AI output stays English.
 - **PWA**: `public/sw.js` caches the app shell and hashed assets (production only), never cross-origin requests, so Firebase/AI calls always hit the network. Every route is in the first bundle so it can be cached.
-- **Design system**: `src/design-system` (ui + utils), Tailwind v4 tokens in `src/index.css`.
+- **Design system** (`src/design-system`, tokens in `src/index.css`): the case being worked on is a paper *docket* on a dark desk; policy decisions are *stamps*; on-device is drawn solid and cloud dashed (shape, not hue, carries the route); marigold means "act here". One typeface (Archivo variable, width axis for display) plus IBM Plex Sans Arabic, both self-hosted so they work offline.
 
 ## Trust layer (added for the hackathon)
 - **Route planner** (`ai/hybrid-engine/route.ts`): one pure function decides what the privacy gate allows (Local Only, operator switch, consent, offline, redaction). `HybridEngine` executes the plan; Privacy Evidence renders the same plan for every mode, so the explanation cannot drift from the behaviour; unit tests check the boundary independently (adapter spy, mocked `firebase/ai`). Each run also carries a diagnostic observation: requests to the Gemini endpoints seen through Resource Timing (supporting evidence, not proof).
