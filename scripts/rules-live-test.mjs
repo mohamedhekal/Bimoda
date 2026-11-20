@@ -240,6 +240,35 @@ try {
     true,
   )
   expect('approvals cannot be deleted', await call(A, 'DELETE', `orgs/${A.orgId}/approvals/ap1`), false)
+  expect(
+    'NEED_MORE_INFORMATION decisions can never become approvals',
+    await create(A, A.orgId, 'approvals', 'ap10', approval(A.uid, 'ap10', 'R-007', 'NEED_MORE_INFORMATION', 'pending_approval')),
+    false,
+  )
+  expect(
+    'a pending approval cannot be executed directly (approval step cannot be skipped)',
+    await (async () => {
+      await create(A, A.orgId, 'approvals', 'ap8', approval(A.uid, 'ap8', 'R-006', 'REQUIRE_APPROVAL', 'pending_approval'))
+      return patch(A, A.orgId, 'approvals', 'ap8', {
+        state: 'executed',
+        reviewer: 'a',
+        reviewerRole: 'manager',
+        reviewerUid: A.uid,
+        note: 'x',
+        updatedAt: now(),
+      })
+    })(),
+    false,
+  )
+  expect(
+    'a rejected approval cannot be approved afterwards',
+    await (async () => {
+      await create(A, A.orgId, 'approvals', 'ap9', approval(A.uid, 'ap9', 'R-006', 'REQUIRE_APPROVAL', 'pending_approval'))
+      await patch(A, A.orgId, 'approvals', 'ap9', { state: 'rejected', reviewer: 'a', reviewerRole: 'manager', reviewerUid: A.uid, updatedAt: now() })
+      return patch(A, A.orgId, 'approvals', 'ap9', { state: 'approved', reviewer: 'a', reviewerRole: 'manager', reviewerUid: A.uid, updatedAt: now() })
+    })(),
+    false,
+  )
 
   // --- members / role ceilings ---
   expect('A (admin) adds B as an agent member', await create(A, A.orgId, 'members', B.uid, { role: 'agent', email: 'b@example.test', createdAt: t }), true)

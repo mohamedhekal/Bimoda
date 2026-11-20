@@ -15,8 +15,8 @@ const MODES: { id: PrivacyMode; label: string }[] = [
 const PREFS: InferencePreference[] = ['ONLY_ON_DEVICE', 'ONLY_IN_CLOUD', 'PREFER_ON_DEVICE']
 const TOKENS = ['[CUSTOMER_NAME]', '[PHONE]', '[EMAIL]', '[ADDRESS]'] as const
 
-/** Explains the privacy gate with the same pure function the engine executes, plus measured evidence from the last real run. */
-export function PrivacyProof({ text, entities, last }: { text: string; entities: KnownEntities; last?: EngineResult }) {
+/** Explains the privacy gate with the same pure function the engine executes, plus diagnostic observations from the last real run (not proof). */
+export function PrivacyEvidence({ text, entities, last }: { text: string; entities: KnownEntities; last?: EngineResult }) {
   const t = useT()
   const settings = useAppState((s) => s.settings)
   const online = typeof navigator === 'undefined' ? true : navigator.onLine
@@ -26,7 +26,7 @@ export function PrivacyProof({ text, entities, last }: { text: string; entities:
   const rec = last?.record
 
   return (
-    <Card title={t('Privacy Proof Mode')} action={<Badge tone="cyan">{t('same code path as the engine')}</Badge>}>
+    <Card title={t('Privacy Evidence')} action={<Badge tone="cyan">{t('same code path as the engine')}</Badge>}>
       <div className="space-y-5 text-sm">
         <section>
           <h3 className="text-xs font-semibold uppercase text-muted">{t('Routing plan per privacy mode')}</h3>
@@ -93,9 +93,9 @@ export function PrivacyProof({ text, entities, last }: { text: string; entities:
         </section>
 
         <section>
-          <h3 className="text-xs font-semibold uppercase text-muted">{t('Evidence from the last run')}</h3>
+          <h3 className="text-xs font-semibold uppercase text-muted">{t('Observations from the last run')}</h3>
           {!rec ? (
-            <p className="mt-2 text-xs text-muted">{t('Run a test above to see evidence.')}</p>
+            <p className="mt-2 text-xs text-muted">{t('Run a test above to see observations.')}</p>
           ) : (
             <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
               <dt className="text-muted">{t('Source (from the SDK)')}</dt>
@@ -106,11 +106,13 @@ export function PrivacyProof({ text, entities, last }: { text: string; entities:
               <dd className="font-mono">
                 {rec.requestedPreference} → {rec.effectivePreference}
               </dd>
+              <dt className="text-muted">{t('Preference handed to the SDK')}</dt>
+              <dd className="font-mono">{rec.effectivePreference}</dd>
               <dt className="text-muted">{t('Redactions applied')}</dt>
               <dd>{rec.redactionApplied ? rec.redactions : t('none')}</dd>
-              <dt className="text-muted">{t('AI endpoint requests (measured)')}</dt>
+              <dt className="text-muted">{t('AI endpoint requests observed (diagnostic)')}</dt>
               <dd>{last?.evidence ? last.evidence.aiEndpointRequests : '–'}</dd>
-              <dt className="text-muted">{t('AI endpoint requests this session')}</dt>
+              <dt className="text-muted">{t('AI endpoint requests observed this session (diagnostic)')}</dt>
               <dd>{countAiEndpointRequests()}</dd>
             </dl>
           )}
@@ -118,7 +120,7 @@ export function PrivacyProof({ text, entities, last }: { text: string; entities:
 
         <p className="rounded-md border border-line p-2 text-[11px] text-muted">
           {t(
-            'Scope: the measurement counts requests to the Gemini model endpoints (Resource Timing). The Firebase SDK can still contact other Firebase services (App Check, Remote Config, Auth, Firestore), so this shows that the prompt was not sent to the cloud model, not that the page makes no network traffic. It is evidence from this browser, not a security boundary.',
+            'Scope: the count uses the browser Resource Timing API for requests to the Gemini model endpoints. It is diagnostic evidence only: entries can be missing (buffer limits, blocked or failed requests, service workers) and it cannot see other tabs, so it is not proof of zero cloud requests. In Local Only the guarantee comes from the routing rule, not from this count: the engine hands the SDK only ONLY_ON_DEVICE, which per the Firebase documentation throws instead of falling back to the cloud (covered by unit tests at the engine and adapter boundaries). The Firebase SDK may still contact other Firebase services (App Check, Remote Config, Auth, Firestore).',
           )}
         </p>
       </div>

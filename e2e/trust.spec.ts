@@ -35,7 +35,6 @@ test.describe('Trust Center', () => {
     await expect(page.getByText('Valid answers').locator('..')).toContainText('0/3')
     await expect(page.getByText('Intent accuracy').locator('..')).toContainText('n/a')
     await expect(page.getByText(/The run stopped early after 3 consecutive runs without an answer/)).toBeVisible()
-    await expect(page.getByText('Blocked but approvable', { exact: true }).locator('..')).toContainText('0')
   })
 })
 
@@ -92,23 +91,25 @@ test.describe('What-if policy simulator', () => {
   })
 })
 
-test.describe('Privacy Proof Mode', () => {
-  test('explains the routing plan with the engine rules and shows measured evidence', async ({ page }) => {
+test.describe('Privacy Evidence', () => {
+  test('explains the routing plan with the engine rules and shows diagnostic observations', async ({ page }) => {
     await seed(page)
     await page.goto('/app/lab')
-    const proof = page.locator('section', { has: page.getByRole('heading', { name: 'Privacy Proof Mode' }) })
+    const proof = page.locator('section', { has: page.getByRole('heading', { name: 'Privacy Evidence' }) })
     const row = (name: string) => proof.getByRole('row', { name: new RegExp(`^${name}`) })
     await expect(row('Local only')).toContainText('Blocked') // ONLY_IN_CLOUD column
     await expect(row('Local only')).toContainText('Stays on device')
     await expect(row('Hybrid')).toContainText('Cloud-capable, redacted')
     await expect(proof.getByText('[CUSTOMER_NAME]').first()).toBeVisible()
-    await expect(proof.getByText('Run a test above to see evidence.')).toBeVisible()
+    await expect(proof.getByText('Run a test above to see observations.')).toBeVisible()
 
     await page.getByRole('radio', { name: 'Local only' }).click()
     await page.getByRole('button', { name: 'Run B' }).click()
-    await expect(proof.getByText('AI endpoint requests (measured)').locator('..')).toContainText('0')
+    await expect(proof.getByText('AI endpoint requests observed (diagnostic)').locator('..')).toContainText('0')
     await expect(proof.getByText('Preference requested → used').locator('..')).toContainText('ONLY_IN_CLOUD → ONLY_IN_CLOUD')
-    await expect(proof.getByText(/not a security boundary/)).toBeVisible()
+    await expect(proof.getByText('Preference handed to the SDK').locator('..')).toContainText('ONLY_IN_CLOUD')
+    await expect(proof.getByText(/diagnostic evidence only/)).toBeVisible()
+    await expect(proof.getByText(/not proof of zero cloud requests/)).toBeVisible()
   })
 })
 
@@ -123,4 +124,30 @@ test.describe('Arabic', () => {
     await expect(page.getByRole('heading', { name: 'محاكي «ماذا لو» للسياسات' })).toBeVisible()
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1)
   })
+})
+
+test('Trust Center enforcement test refuses every prohibited approval attempt, independent of the AI', async ({ page }) => {
+  await seed(page)
+  await page.goto('/app/trust')
+  const card = page.locator('section', { has: page.getByRole('heading', { name: /Approval enforcement/ }) })
+  const badge = card.getByText(/prohibited attempts refused/).first()
+  const m = (await badge.textContent())!.match(/(\d+)\/(\d+)/)!
+  expect(Number(m[2])).toBeGreaterThan(40)
+  expect(m[1]).toBe(m[2])
+  await expect(card.getByText('Failures').locator('..')).toContainText('0')
+  await card.getByRole('button', { name: 'Show checks' }).click()
+  await expect(card.getByText(/L01: a DENY proposal must not create an approval/)).toBeVisible()
+  await expect(card.getByText(/forged "approved" record/).first()).toBeVisible()
+})
+
+test('Remote Config unavailable: the Lab reports it honestly and the app keeps working with defaults', async ({ page }) => {
+  await seed(page)
+  await page.route(/firebaseremoteconfig\.googleapis\.com/, (r) => r.abort())
+  await page.goto('/app/lab')
+  const rc = page.getByText('Remote Config', { exact: true }).locator('..')
+  await expect(rc).toContainText(/error|default/)
+  await expect(rc).toContainText('cloud on') // fail-open default
+  await page.getByRole('radio', { name: 'Local only' }).click()
+  await page.getByRole('button', { name: 'Run B' }).click()
+  await expect(page.getByText('Local Only mode forbids cloud inference.')).toBeVisible()
 })

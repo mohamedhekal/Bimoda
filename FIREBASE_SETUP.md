@@ -10,6 +10,6 @@ Everything below is already configured for the `bimoda` project; follow it to re
 5. **Firestore**: Console → Firestore → Create database (Standard edition, production mode; we used `nam5`, which cannot be changed later). Deploy rules: `firebase deploy --only firestore:rules --project <id>`.
 6. **Remote Config**: `firebase deploy --only remoteconfig --project <id>` publishes `remoteconfig.template.json` (`cloud_model`, `ai_timeout_ms`, `cloud_inference_enabled`). Setting `cloud_inference_enabled` to `false` and republishing makes clients that fetch the new template behave like Local Only: open tabs get it within seconds through realtime updates, others at the next fetch (5 min in production builds). It is an operator control, not a security boundary (see `SECURITY.md`). `VITE_CLOUD_FAIL_CLOSED=true` keeps cloud inference off until Remote Config has been fetched successfully.
 7. **Hosting**: `npm run build && firebase deploy --only hosting --project <id>` → https://&lt;project&gt;.web.app. `sw.js` is served `no-cache`; hashed assets are immutable.
-8. **Verify**: `npm run test:rules` runs 43 live checks against your rules (creates and deletes two temporary users; it prints the CLI commands to delete their test data).
+8. **Verify**: `npm run test:rules` runs 46 live checks against your rules (creates and deletes two temporary users; it prints the CLI commands to delete their test data).
 
 Optional `VITE_CLOUD_MODEL` overrides the cloud model (otherwise the Remote Config value, default per the Firebase docs for SDK v13).

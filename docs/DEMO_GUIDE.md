@@ -17,5 +17,6 @@ Open `/` and press **Try Bimoda** (no sign-in). The first visit offers a 6-step 
 12. **Remote Config**: the Lab shows its status (`live`, timeout, cloud on/off). Setting `cloud_inference_enabled=false` in Remote Config disables cloud runs everywhere.
 13. **Trust Center**: policy conformance shows 40/40. Pick *Quick sample* and press **Run evaluation** to run real inference (on-device in Hybrid/Local only, cloud in Cloud mode). Cloud runs are paced (free-tier limits) and stop after 3 consecutive failures.
 14. **Decision trace** (Workspace): after *Analyze* or *Propose*, scroll to the trace; expand any step. Purple = model-generated, cyan = deterministic rule, orange = human.
-15. **Privacy Proof Mode** (Lab): compare how each privacy mode routes each test, preview the redaction, run a test and read the measured AI-endpoint request count.
+15. **Privacy Evidence** (Lab): compare how each privacy mode routes each test, preview the redaction, run a test and read the preference handed to the SDK plus the diagnostic request count (supporting evidence, not proof).
+16b. **Approval enforcement** (Trust Center): an independent test attempts prohibited approval transitions and requires every one to be refused.
 16. **What-if simulator** (Policy Studio, Role: Admin): change *Order edits lock from*, see which scenarios change, try disabling the warehouse-receipt check (rejected), then apply or reset.

@@ -184,7 +184,6 @@ export const ar: Record<string, string> = {
   Legend: 'دليل الألوان',
   'Model-generated text explains and proposes. Only the deterministic policy decision and a human approval can allow an action.':
     'النص الذي يولّده النموذج يشرح ويقترح فقط. قرار السياسة الحتمي وموافقة بشرية هما وحدهما ما يسمح بتنفيذ إجراء.',
-  'Privacy Proof Mode': 'وضع إثبات الخصوصية',
   'same code path as the engine': 'نفس مسار الكود في المحرك',
   'Routing plan per privacy mode': 'خطة التوجيه لكل وضع خصوصية',
   'What each privacy mode allows for each test': 'ما يسمح به كل وضع خصوصية لكل اختبار',
@@ -203,18 +202,12 @@ export const ar: Record<string, string> = {
   offline: 'غير متصل',
   'Redaction preview (what could leave the device)': 'معاينة الحجب (ما قد يغادر الجهاز)',
   'Nothing to redact in this text.': 'لا شيء يستوجب الحجب في هذا النص.',
-  'Evidence from the last run': 'أدلة من آخر تشغيل',
-  'Run a test above to see evidence.': 'شغّل اختبارًا لعرض الأدلة.',
   'Source (from the SDK)': 'المصدر (من الـ SDK)',
   'no model output': 'لا يوجد ناتج من النموذج',
   'derived from an ONLY_* mode': 'مستنتج من وضع ONLY_*',
   'Preference requested → used': 'التفضيل المطلوب ← المستخدم',
   'Redactions applied': 'عمليات الحجب المطبقة',
   none: 'لا شيء',
-  'AI endpoint requests (measured)': 'طلبات نقطة الذكاء الاصطناعي (مقاسة)',
-  'AI endpoint requests this session': 'طلبات نقطة الذكاء الاصطناعي في هذه الجلسة',
-  'Scope: the measurement counts requests to the Gemini model endpoints (Resource Timing). The Firebase SDK can still contact other Firebase services (App Check, Remote Config, Auth, Firestore), so this shows that the prompt was not sent to the cloud model, not that the page makes no network traffic. It is evidence from this browser, not a security boundary.':
-    'النطاق: القياس يحصي الطلبات إلى نقاط نموذج Gemini (Resource Timing). قد يتصل الـ SDK بخدمات Firebase أخرى (App Check وRemote Config وAuth وFirestore)، فهذا يثبت أن الطلب لم يُرسل إلى النموذج السحابي، وليس أن الصفحة بلا أي حركة شبكة. هو دليل من هذا المتصفح وليس حاجزًا أمنيًا.',
   'What-if policy simulator': 'محاكي «ماذا لو» للسياسات',
   'draft only, nothing is saved': 'مسودة فقط، لا يُحفظ شيء',
   'Change a draft below and compare how the 40 synthetic scenarios would be decided under the current policy and under the draft. Case data and the live policy are not touched.':
@@ -272,8 +265,6 @@ export const ar: Record<string, string> = {
   'false positives': 'إنذارات كاذبة',
   'AI proposals blocked by policy': 'مقترحات الذكاء التي حجبتها السياسة',
   'policy engine caught them': 'التقطها محرك السياسات',
-  'Blocked but approvable': 'محجوب لكنه قابل للموافقة',
-  'must be 0': 'يجب أن يكون 0',
   'Latency median / p95': 'زمن الاستجابة الوسيط / p95',
   'By source (n, median)': 'حسب المصدر (العدد، الوسيط)',
   device: 'الجهاز',
@@ -294,11 +285,32 @@ export const ar: Record<string, string> = {
     '«الإجابة الصالحة» اجتازت التحقق بـ Zod. التشغيلات التي انتهت مهلتها أو لم تتوفر تُعرض منفصلة ولا تُحسب إجابات خاطئة.',
   '"Suggested action acceptable" means the proposal is in a set the authors consider sensible. Proposals outside it still go through the policy engine.':
     '«الإجراء المقترح مقبول» يعني أن المقترح ضمن مجموعة يراها المؤلفون معقولة. المقترحات خارجها تمر أيضًا عبر محرك السياسات.',
-  '"Blocked but approvable" counts AI proposals that policy blocked yet could still become an approval. It is 0 by construction (blocked decisions cannot become approvals) and is shown so a regression would be visible.':
-    '«محجوب لكنه قابل للموافقة» يحصي مقترحات حجبتها السياسة ويمكن مع ذلك أن تصبح موافقة. قيمته 0 بحكم التصميم (القرارات المحجوبة لا تتحول إلى موافقات) ويُعرض ليظهر أي تراجع.',
   'Results are stored in this browser only. Runs also appear in Audit & runs.': 'تُخزَّن النتائج في هذا المتصفح فقط. وتظهر التشغيلات أيضًا في التدقيق والتشغيلات.',
   'The run stopped early after 3 consecutive runs without an answer, to avoid piling requests onto a model that is not responding. Wait a minute or reload, then run it again.':
     'توقف التشغيل مبكرًا بعد 3 تشغيلات متتالية بلا إجابة، لتجنب تكديس الطلبات على نموذج لا يستجيب. انتظر دقيقة أو أعد التحميل ثم أعد التشغيل.',
+  'Approval enforcement (independent test, no AI)': 'إنفاذ الموافقات (اختبار مستقل، بلا ذكاء اصطناعي)',
+  'prohibited attempts refused': 'محاولة ممنوعة رُفضت',
+  'Tries prohibited approval transitions with the real approval logic (forged records, wrong roles, repeated or skipped states) and checks each one is refused. It ignores AI output. Control actions confirm the permitted path still works.':
+    'يجرّب انتقالات موافقة ممنوعة بمنطق الموافقات الحقيقي (سجلات مزوّرة، أدوار خاطئة، حالات مكررة أو متخطاة) ويتحقق أن كلًا منها مرفوض. يتجاهل مخرجات الذكاء الاصطناعي. وتؤكد اختبارات الضبط أن المسار المسموح ما زال يعمل.',
+  'Prohibited attempts refused': 'المحاولات الممنوعة المرفوضة',
+  'Permitted actions that worked (controls)': 'إجراءات مسموحة نجحت (ضوابط)',
+  Failures: 'إخفاقات',
+  'This covers the app’s client-side logic. The Firestore security rules enforce the same limits server-side and are verified separately against the real project with npm run test:rules.':
+    'هذا يغطي منطق التطبيق في جهة العميل. قواعد أمان Firestore تفرض الحدود نفسها على السيرفر ويُتحقق منها منفصلًا على المشروع الحقيقي بالأمر npm run test:rules.',
+  'Hide checks': 'أخفِ الفحوصات',
+  'Show checks': 'اعرض الفحوصات',
+  prohibited: 'ممنوع',
+  control: 'ضابط',
+  'Approval enforcement is tested independently of the AI: it attempts prohibited transitions and requires every one to be refused. It does not use the AI results above.':
+    'يُختبر إنفاذ الموافقات بمعزل عن الذكاء الاصطناعي: يحاول انتقالات ممنوعة ويشترط رفض كل واحدة. ولا يستخدم نتائج الذكاء الاصطناعي أعلاه.',
+  'Privacy Evidence': 'أدلة الخصوصية',
+  'AI endpoint requests observed (diagnostic)': 'طلبات نقطة الذكاء الاصطناعي المرصودة (تشخيصي)',
+  'AI endpoint requests observed this session (diagnostic)': 'طلبات نقطة الذكاء الاصطناعي المرصودة في هذه الجلسة (تشخيصي)',
+  'Observations from the last run': 'ملاحظات من آخر تشغيل',
+  'Run a test above to see observations.': 'شغّل اختبارًا لعرض الملاحظات.',
+  'Preference handed to the SDK': 'التفضيل المُمرَّر إلى الـ SDK',
+  'Scope: the count uses the browser Resource Timing API for requests to the Gemini model endpoints. It is diagnostic evidence only: entries can be missing (buffer limits, blocked or failed requests, service workers) and it cannot see other tabs, so it is not proof of zero cloud requests. In Local Only the guarantee comes from the routing rule, not from this count: the engine hands the SDK only ONLY_ON_DEVICE, which per the Firebase documentation throws instead of falling back to the cloud (covered by unit tests at the engine and adapter boundaries). The Firebase SDK may still contact other Firebase services (App Check, Remote Config, Auth, Firestore).':
+    'النطاق: العدّ يستخدم واجهة Resource Timing في المتصفح لطلبات نقاط نموذج Gemini. هو دليل تشخيصي فقط: قد تغيب إدخالات (حدود المخزن، طلبات محجوبة أو فاشلة، service workers) ولا يرى التبويبات الأخرى، فليس إثباتًا لانعدام الطلبات السحابية. في «محلي فقط» الضمان مصدره قاعدة التوجيه لا هذا العدّ: المحرك يمرّر للـ SDK الوضع ONLY_ON_DEVICE فقط، وهو بحسب توثيق Firebase يُخفق ولا يرجع للسحابة (مغطّى باختبارات وحدة عند حدّي المحرك والـ adapter). وقد يتصل الـ SDK بخدمات Firebase أخرى (App Check وRemote Config وAuth وFirestore).',
   // language
   Language: 'اللغة',
   'AI output stays in English. Arabic is a beta of the interface only.': 'تبقى مخرجات الذكاء الاصطناعي بالإنجليزية. العربية نسخة تجريبية للواجهة فقط.',

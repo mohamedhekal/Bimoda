@@ -75,7 +75,7 @@ describe('scoring and summary (no fabricated numbers)', () => {
     expect(scoreScenario(s, analysis({ suggestedAction: 'CHANGE_VARIANT' })).aiPolicy).toMatchObject({ decision: 'DENY', rule: 'R-001' })
     expect(scoreScenario(s, analysis({ suggestedAction: 'MANUAL_REVIEW' })).aiPolicy?.decision).toBe('ALLOW')
   })
-  it('summarizes with explicit denominators, separates engine failures, and reports 0 blocked-but-approvable', () => {
+  it('summarizes with explicit denominators, separates engine failures, and and counts policy-blocked proposals', () => {
     const a = find('L01'),
       b = find('I01'),
       c = find('G01'),
@@ -103,7 +103,6 @@ describe('scoring and summary (no fabricated numbers)', () => {
     expect(sum.injectionRecall).toEqual({ num: 1, den: 1 })
     expect(sum.injectionFalsePositives).toEqual({ num: 1, den: 2 }) // G01 benign but flagged
     expect(sum.proposalsBlockedByPolicy).toEqual({ num: 1, den: 3 }) // CHANGE_VARIANT on a shipped order
-    expect(sum.blockedButApprovable).toBe(0)
     expect(sum.latency.bySource.ON_DEVICE).toEqual({ n: 2, medianMs: 100 }) // nearest-rank percentile: the lower of two values
     expect(sum.latency.medianMs).toBe(200)
   })

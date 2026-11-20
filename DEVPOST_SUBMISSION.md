@@ -22,7 +22,7 @@ Support and fulfillment teams juggle messages that mix pricing confusion, locked
 - **Response composer:** amounts come only from order records; a draft that invents an amount is rejected.
 - **Operations insights:** AI interpretation of aggregate counts only, labeled as interpretation.
 - **Hybrid AI Lab:** the same case run as local-only, cloud-only and hybrid, each showing the actual source, duration and privacy handling.
-- **Trust Center:** a deterministic policy-conformance suite plus a real-inference evaluation of 40 synthetic scenarios, with every rate shown with its denominator. **Decision trace** explains each outcome and separates model text from deterministic rules. **Privacy Proof Mode** shows the routing plan and measured requests to the model endpoint. **What-if simulator** previews a policy change before it is applied.
+- **Trust Center:** a deterministic policy-conformance suite plus a real-inference evaluation of 40 synthetic scenarios, with every rate shown with its denominator. **Decision trace** explains each outcome and separates model text from deterministic rules. **Privacy Evidence** shows the routing plan (the same function the engine executes) and a diagnostic count of requests to the model endpoint; in Local Only the SDK is only ever asked for `ONLY_ON_DEVICE`. An independent **approval-enforcement test** tries prohibited approval transitions and requires every one to be refused. **What-if simulator** previews a policy change before it is applied.
 - Rule-based shipping/return signals, Mission Control analytics from real run records, audit trail, command palette, guided tour, offline PWA shell, Arabic/RTL (beta).
 
 ## How we use Firebase AI Logic (hybrid inference)
@@ -39,7 +39,7 @@ Support and fulfillment teams juggle messages that mix pricing confusion, locked
 | Hosting | https://bimoda.web.app |
 
 ## How we built it
-React + TypeScript (strict) + Vite + Tailwind; Zod validation for every AI output; Playwright (36 e2e + 2 PWA e2e on real Chrome), Vitest (100 tests), and a live security-rules test (`npm run test:rules`, 43 checks against the real project).
+React + TypeScript (strict) + Vite + Tailwind; Zod validation for every AI output; Playwright (38 e2e + 2 PWA e2e on real Chrome), Vitest (119 tests), and a live security-rules test (`npm run test:rules`, 46 checks against the real project).
 
 ## Challenges we faced
 - On-device availability and hangs: Chrome's model session can stall; we added a per-call timeout and cancel and treat on-device calls as able to hang. Arrays without `maxItems` made Gemini Nano generate until timeout; we keep array limits in the constraint schema.
@@ -48,7 +48,7 @@ React + TypeScript (strict) + Vite + Tailwind; Zod validation for every AI outpu
 - Firestore rules cannot re-run the policy engine, so they validate the stored decision and role ceilings rather than recomputing it.
 
 ## Accomplishments (verified)
-See `README.md` → "Verified". Highlights: a 40-scenario real-inference evaluation (cloud mode: 40/40 valid answers, 100% intent accuracy vs. the authors' labels, 100% injection recall, 0 blocked-but-approvable) reported with denominators and caveats; real on-device and cloud runs through the SDK on Chrome 157, privacy gate verified with zero requests to the AI model endpoint in Local Only (other Firebase services may still be contacted), 43/43 live security-rule checks, offline reload from the service worker cache on the production build, and the live site running with production App Check.
+See `README.md` → "Verified". Highlights: a 40-scenario real-inference evaluation (cloud mode: 40/40 valid answers, 100% intent accuracy vs. the authors' labels, 100% injection recall, 0 blocked-but-approvable) reported with denominators and caveats; real on-device and cloud runs through the SDK on Chrome 157, privacy routing boundary tested at the engine and adapter level, with a diagnostic request count of 0 to the AI model endpoint in Local Only (other Firebase services may still be contacted), 46/46 live security-rule checks, offline reload from the service worker cache on the production build, and the live site running with production App Check.
 
 ## What we learned
 Hybrid inference is most useful when the product is honest about the route taken, and when business-critical decisions never depend on a model.

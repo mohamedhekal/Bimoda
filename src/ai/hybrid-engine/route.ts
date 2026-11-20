@@ -19,14 +19,14 @@ export interface RoutePlan {
   redact: boolean
   /** Set when the request must not run at all */
   blocked: { status: Extract<RunStatus, 'blocked_privacy' | 'consent_required' | 'offline'>; reason: string } | null
-  /** Human-readable steps, used by Privacy Proof Mode */
+  /** Human-readable steps, used by Privacy Evidence */
   steps: string[]
 }
 
 const CLOUD_PREFS: InferencePreference[] = ['ONLY_IN_CLOUD', 'PREFER_IN_CLOUD']
 
 /**
- * The single source of truth for privacy routing. HybridEngine executes this plan; Privacy Proof Mode explains it.
+ * The single source of truth for privacy routing. HybridEngine executes this plan; Privacy Evidence explains it.
  * It only decides what is *allowed*: whether Gemini Nano or the cloud model actually answers is decided by the Firebase SDK.
  */
 export function planRoute(i: RouteInput): RoutePlan {

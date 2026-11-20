@@ -55,7 +55,7 @@ await shot('whatif-simulator', {
     await p.getByLabel('Order edits lock from').last().selectOption('shipped')
   },
 })
-await shot('privacy-proof', {
+await shot('privacy-evidence', {
   route: '/app/lab',
   h: 1500,
   act: async (p) => {

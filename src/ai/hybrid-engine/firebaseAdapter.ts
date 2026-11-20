@@ -38,7 +38,10 @@ export function createFirebaseAdapter(app: FirebaseApp): ModelAdapter {
           },
           ...(req.jsonSchema ? { promptOptions: { responseConstraint: req.jsonSchema } } : {}),
         },
-        ...(req.jsonSchema ? { inCloudParams: { model: cloudModel(), generationConfig: { responseMimeType: 'application/json' } } } : {}),
+        // ONLY_ON_DEVICE is never given any cloud configuration: nothing in the request can name a cloud model
+        ...(req.jsonSchema && req.preference !== 'ONLY_ON_DEVICE'
+          ? { inCloudParams: { model: cloudModel(), generationConfig: { responseMimeType: 'application/json' } } }
+          : {}),
       })
       cache.set(key, m)
     }

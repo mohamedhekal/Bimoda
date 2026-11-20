@@ -10,13 +10,13 @@ Before recording: open the Lab once and press **Enable Local AI**; privacy mode 
 | 0:15–0:30 | Idea | **Try Bimoda** → Mission Control | "Bimoda is a hybrid AI ops copilot on Firebase AI Logic: it keeps data on the device when it can, and proves what happened." |
 | 0:30–1:05 | Real hybrid AI | Workspace → **ORD-1006** (injection) → **Analyze conversation** | "A real request. The badge shows the SDK's inferenceSource: processed on this device. The injection attempt is flagged and not followed." |
 | 1:05–1:35 | Decision trace | Scroll to **Decision trace**; expand Policy evaluation; propose **Refund** | "Every decision is explained step by step. Model text is purple; deterministic rules are cyan. The model proposes; only policy and a human can allow." |
-| 1:35–2:05 | Privacy proof | Lab → **Run all three**; show **Privacy Proof Mode** (matrix, redaction preview, measured AI-endpoint requests); Local only → Run B | "The same function the engine runs explains the routing for every privacy mode. We measure requests to the model endpoint: zero when blocked. This shows the prompt wasn't sent to the cloud model, not that the page makes no network calls." |
-| 2:05–2:35 | Trust Center | Trust Center → policy conformance 40/40 → the AI evaluation result you ran before (or the quick sample) | "Forty synthetic scenarios, real inference. Every number has its denominator. Model failures are listed separately, not counted as wrong answers." |
+| 1:35–2:05 | Privacy evidence | Lab → **Run all three**; show **Privacy Evidence** (routing matrix, redaction preview, preference handed to the SDK, diagnostic request count); Local only → Run B | "The same function the engine runs explains the routing for every privacy mode. In Local Only the SDK is only ever asked for on-device inference. The request count beside it is diagnostic evidence, not proof." |
+| 2:05–2:35 | Trust Center | Trust Center → policy conformance 40/40 → **Approval enforcement** (every prohibited attempt refused) → the AI evaluation result you ran before (or the quick sample) | "Forty synthetic scenarios, real inference. Every number has its denominator and model failures are listed separately. A separate test tries to push forbidden approvals through, and every attempt is refused." |
 | 2:35–2:50 | What-if + close | Policy Studio → What-if simulator: lock edits from *shipped* → affected scenarios | "Managers can test a policy change before applying it. Intelligent commerce operations shouldn't depend on one device, one model, or one connection." |
 
 ## Shot checklist
 - [ ] Badge visible for ≥ 2 s on every AI answer; decision trace legend visible
-- [ ] Privacy Proof matrix + the "measured" line; the scope note is not hidden
+- [ ] Privacy Evidence matrix + the "diagnostic" line; the scope note is not hidden
 - [ ] No debug token, API secret or personal email on screen (use a throwaway account if you show sign-in)
 - [ ] Final length ≤ 3:00 (only the first 3 minutes are judged)
-- [ ] Audio claims match the README ("Known limitations"); never say "server-enforced policy" or "zero network traffic"
+- [ ] Audio claims match the README ("Known limitations"); never say "server-enforced policy", "zero network traffic" or that the request count "proves" anything (it is diagnostic evidence)

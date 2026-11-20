@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { engine } from '../../ai/engineInstance'
+import { runEnforcementSuite, summarizeEnforcement } from '../../ai/evaluation/enforcement'
 import { fmtRatio, runAiEvaluation, runPolicySuite, summarize, type ScenarioResult } from '../../ai/evaluation/evaluate'
 import { defaultPreference } from '../../ai/hybrid-engine/engine'
 import { QUICK_SCENARIOS, SCENARIOS } from '../../domain/scenarios'
@@ -52,6 +53,9 @@ export function TrustCenter() {
     return [...m].sort(([a], [b]) => a.localeCompare(b))
   }, [suite])
 
+  const enforcement = useMemo(() => runEnforcementSuite(SCENARIOS, policy), [policy])
+  const enf = useMemo(() => summarizeEnforcement(enforcement), [enforcement])
+  const [showEnf, setShowEnf] = useState(false)
   const pref = defaultPreference(settings.privacyMode)
   const shown = useMemo(() => live ?? saved?.results ?? [], [live, saved])
   // the denominator set must match the run being shown: the one in progress, else the saved one
@@ -178,6 +182,69 @@ export function TrustCenter() {
         )}
       </Card>
 
+      <Card
+        title={t('Approval enforcement (independent test, no AI)')}
+        action={
+          <Badge tone={enf.failed.length === 0 ? 'ok' : 'bad'}>
+            {enf.prohibited.refused}/{enf.prohibited.attempted} {t('prohibited attempts refused')}
+          </Badge>
+        }
+      >
+        <p className="text-xs text-muted">
+          {t(
+            'Tries prohibited approval transitions with the real approval logic (forged records, wrong roles, repeated or skipped states) and checks each one is refused. It ignores AI output. Control actions confirm the permitted path still works.',
+          )}
+        </p>
+        <dl className="mt-3 grid grid-cols-2 gap-3 text-xs md:grid-cols-3">
+          <div>
+            <dt className="text-muted">{t('Prohibited attempts refused')}</dt>
+            <dd className="text-lg font-semibold">
+              {enf.prohibited.refused}/{enf.prohibited.attempted}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-muted">{t('Permitted actions that worked (controls)')}</dt>
+            <dd className="text-lg font-semibold">
+              {enf.controls.passed}/{enf.controls.attempted}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-muted">{t('Failures')}</dt>
+            <dd className={enf.failed.length ? 'text-lg font-semibold text-bad' : 'text-lg font-semibold'}>{enf.failed.length}</dd>
+          </div>
+        </dl>
+        <p className="mt-2 text-[11px] text-muted">
+          {t(
+            'This covers the app’s client-side logic. The Firestore security rules enforce the same limits server-side and are verified separately against the real project with npm run test:rules.',
+          )}
+        </p>
+        {enf.failed.length > 0 && (
+          <ul role="alert" className="mt-2 list-disc rounded-lg border border-bad/50 bg-bad/10 p-2 ps-6 text-xs text-bad">
+            {enf.failed.map((c) => (
+              <li key={c.id}>{c.description}</li>
+            ))}
+          </ul>
+        )}
+        <button className="mt-3 text-xs text-cyan underline" aria-expanded={showEnf} onClick={() => setShowEnf((v) => !v)}>
+          {showEnf ? t('Hide checks') : t('Show checks')}
+        </button>
+        {showEnf && (
+          <ul className="mt-2 max-h-64 space-y-1 overflow-y-auto text-xs">
+            {enforcement.map((c) => (
+              <li key={c.id} className="flex gap-2">
+                <span aria-hidden className={c.passed ? 'text-ok' : 'text-bad'}>
+                  {c.passed ? '✓' : '✗'}
+                </span>
+                <span>
+                  <Badge className="me-1">{c.kind === 'prohibited' ? t('prohibited') : t('control')}</Badge>
+                  {c.description}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+
       <Card title={t('AI evaluation (real inference)')} action={<Badge tone="violet">{pref}</Badge>}>
         <p className="text-xs text-muted">
           {t(
@@ -253,12 +320,6 @@ export function TrustCenter() {
                 value={fmtRatio(summary.proposalsBlockedByPolicy)}
                 tone="ok"
                 hint={t('policy engine caught them')}
-              />
-              <Stat
-                label={t('Blocked but approvable')}
-                value={summary.blockedButApprovable}
-                tone={summary.blockedButApprovable ? 'bad' : 'ok'}
-                hint={t('must be 0')}
               />
               <Stat
                 label={t('Latency median / p95')}
@@ -370,7 +431,7 @@ export function TrustCenter() {
           </li>
           <li>
             {t(
-              '"Blocked but approvable" counts AI proposals that policy blocked yet could still become an approval. It is 0 by construction (blocked decisions cannot become approvals) and is shown so a regression would be visible.',
+              'Approval enforcement is tested independently of the AI: it attempts prohibited transitions and requires every one to be refused. It does not use the AI results above.',
             )}
           </li>
           <li>{t('Results are stored in this browser only. Runs also appear in Audit & runs.')}</li>

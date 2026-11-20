@@ -13,8 +13,8 @@ Bimoda is a privacy-aware AI operations copilot for e-commerce teams. It analyze
 | ![](docs/screenshots/mission-control.png) | ![](docs/screenshots/hybrid-lab.png) |
 | **Policy Studio** | **Arabic / RTL (beta)** |
 | ![](docs/screenshots/policy-studio.png) | ![](docs/screenshots/arabic-rtl-dashboard.png) |
-| **Decision trace** | **Privacy Proof Mode** |
-| ![](docs/screenshots/decision-trace.png) | ![](docs/screenshots/privacy-proof.png) |
+| **Decision trace** | **Privacy Evidence** |
+| ![](docs/screenshots/decision-trace.png) | ![](docs/screenshots/privacy-evidence.png) |
 | **Trust Center: AI evaluation (real run)** | **What-if policy simulator** |
 | ![](docs/screenshots/trust-center-ai-evaluation.jpg) | ![](docs/screenshots/whatif-simulator.png) |
 
@@ -30,16 +30,17 @@ Firebase **AI Logic** (hybrid inference), **App Check** (reCAPTCHA Enterprise in
 - **Approval workflow** (suggested → pending → approved/rejected → executed (simulated)), role-gated, audit log. Signed-in users get realtime Firestore sync; signed-out users get local demo data.
 - **Trust Center**: a deterministic policy-conformance suite and a real-inference evaluation over **40 synthetic scenarios**. Every rate is shown with its denominator; failures of the model path (timeouts, rate limits) are reported separately, never as wrong answers.
 - **Decision trace**: for each case, request → AI interpretation → verified facts → policy evaluation → authorization → outcome, with every step labelled by who produced it (customer, model, deterministic rule, human).
-- **Privacy Proof Mode** (Hybrid AI Lab): the routing plan of every privacy mode (the same pure function the engine executes), a redaction preview, and measured requests to the Gemini endpoints for each run.
+- **Privacy Evidence** (Hybrid AI Lab): the routing plan of every privacy mode (the same pure function the engine executes), a redaction preview, the preference actually handed to the SDK, and a diagnostic count of requests to the Gemini endpoints seen via Resource Timing. The count is supporting evidence, not proof of zero cloud requests; in Local Only the engine only ever hands the SDK `ONLY_ON_DEVICE` (tested at the engine and adapter boundaries).
+- **Approval enforcement test** (Trust Center): an independent suite attempts prohibited approval transitions (blocked decisions, forged records, wrong roles, skipped or repeated states) with the real approval logic and requires every one to be refused; a mutation test shows it fails if the role check is broken.
 - **What-if policy simulator** (Policy Studio): edit a draft policy and see which of the 40 scenarios would be decided differently; unsafe drafts are rejected; nothing is saved unless an admin applies it.
 - **UX**: command palette (Ctrl/⌘ K), guided tour, light/dark, offline PWA shell, mobile bottom navigation, reduced-motion support, Arabic/RTL (beta, interface only).
 
 ## Verified (2026-11-20)
 Desktop Chrome 157 (macOS), Firebase project `bimoda`.
 - **Real inference through the SDK**: `ONLY_ON_DEVICE` → on device (~7 s), `ONLY_IN_CLOUD` → cloud (~1.4–1.9 s), `PREFER_ON_DEVICE` → on device (~8 s). Workspace analysis, composer and insights returned validated output on-device and in the cloud; the prompt-injection case was flagged.
-- **Privacy**: Local Only blocked the cloud run with 0 AI network requests; consent ON sent unredacted text; offline reported `offline` with 0 requests; cancel reported `cancelled`; the Remote Config kill switch (flipped from the server, then restored) blocked cloud runs.
+- **Privacy**: Local Only blocked the cloud run (diagnostic count: 0 requests to the Gemini endpoints; supporting evidence only); consent ON sent unredacted text; offline reported `offline` with 0 requests; cancel reported `cancelled`; the Remote Config kill switch (flipped from the server, then restored) blocked cloud runs.
 - **Firebase**: Email sign-up → sandbox org bootstrap → "Cloud sync live"; approval proposed as Agent, approved as Manager, executed; data survived a reload (read back from Firestore); policy v2 saved through the rules; test accounts and data deleted afterwards. The same flow ran on the production URL with App Check in production mode.
-- **Security rules** (`npm run test:rules`, live against the project): **43/43** checks — org isolation, role ceilings, high-risk approvals, immutable evaluation, DENY never approvable, admin-only policy with safety invariants, no raw prompts in AI runs, append-only audit.
+- **Security rules** (`npm run test:rules`, live against the project): **46/46** checks — org isolation, role ceilings, high-risk approvals, immutable evaluation, DENY never approvable, admin-only policy with safety invariants, no raw prompts in AI runs, append-only audit.
 - **Automated**: 67 unit tests (mocked SDK adapter in isolated tests only), 28 Playwright e2e on real Chrome (flows, roles, policy, privacy gate, palette, tour, offline banner, Arabic/RTL, no horizontal overflow at 320–1920 px), 2 PWA e2e on the production build (offline reload from the service worker cache). `typecheck`, `lint` (no warnings) and `build` pass.
 
 ## Known limitations
