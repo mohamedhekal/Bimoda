@@ -16,7 +16,7 @@ Bimoda is a privacy-aware AI operations copilot for e-commerce teams. It analyze
 | **Decision trace** | **Privacy Evidence** |
 | ![](docs/screenshots/decision-trace.png) | ![](docs/screenshots/privacy-evidence.png) |
 | **Trust Center: AI evaluation (real run)** | **What-if policy simulator** |
-| ![](docs/screenshots/trust-center-ai-evaluation.jpg) | ![](docs/screenshots/whatif-simulator.png) |
+| ![](docs/screenshots/trust-center-ai-evaluation.png) | ![](docs/screenshots/whatif-simulator.png) |
 
 ## Firebase products used
 Firebase **AI Logic** (hybrid inference), **App Check** (reCAPTCHA Enterprise in production, debug tokens in dev), **Authentication** (Email/Password + Google), **Cloud Firestore** (+ security rules), **Remote Config**, **Hosting**.
