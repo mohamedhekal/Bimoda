@@ -8,6 +8,7 @@ import { cx, statusTone } from '../../design-system/utils'
 import { isFirebaseConfigured, appCheckState } from '../../firebase/app'
 import { initRemoteConfig, rcBool, rcInfo, rcNumber } from '../../firebase/remoteConfig'
 import { useAppState } from '../../stores/store'
+import { PrivacyProof } from './PrivacyProof'
 import { STAGES, stageStates } from './stages'
 import { useT } from '../../i18n'
 
@@ -248,6 +249,8 @@ export function Lab() {
           )
         })}
       </div>
+
+      <PrivacyProof text={text} entities={LAB_CASE.entities} last={last} />
 
       <p className="text-xs text-muted">
         Cost and speed: this page measures duration only. It makes no claim that on-device is faster than cloud, and no billing figures are shown; check the

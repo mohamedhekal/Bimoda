@@ -35,9 +35,10 @@ export async function analyzeConversation(
   customer: Customer,
   preference: InferencePreference,
   signal?: AbortSignal,
+  feature = 'conversation_intelligence',
 ): Promise<FeatureResult<ConversationAnalysis>> {
   const res = await engine.run({
-    feature: 'conversation_intelligence',
+    feature,
     preference,
     prompt: conversationAnalysisPrompt(c, order, customer),
     jsonSchema: analysisJsonSchema,
