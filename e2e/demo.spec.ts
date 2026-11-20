@@ -237,3 +237,20 @@ test.describe('Arabic (beta) and RTL', () => {
     await expect(page.getByText('DENY', { exact: true })).toBeVisible()
   })
 })
+
+test('sign-in dialog is a centered modal covering the viewport (not trapped inside the header)', async ({ page }) => {
+  await skipTour(page)
+  await page.goto('/app')
+  await page.getByRole('button', { name: 'Sign in' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Sign in' })
+  await expect(dialog).toBeVisible()
+  const vp = page.viewportSize()!
+  const box = (await dialog.boundingBox())!
+  expect(Math.abs(box.x + box.width / 2 - vp.width / 2)).toBeLessThan(20) // horizontally centered
+  expect(box.y + box.height / 2).toBeGreaterThan(vp.height * 0.25) // vertically centered, not stuck at the top
+  const overlay = await dialog.evaluate((el) => el.parentElement!.getBoundingClientRect().toJSON())
+  expect(overlay.width).toBeGreaterThanOrEqual(vp.width - 1)
+  expect(overlay.height).toBeGreaterThanOrEqual(vp.height - 1)
+  await page.keyboard.press('Escape')
+  await expect(dialog).toHaveCount(0)
+})

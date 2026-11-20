@@ -32,14 +32,14 @@ Desktop Chrome 157 (macOS), Firebase project `bimoda`.
 - **Privacy**: Local Only blocked the cloud run with 0 AI network requests; consent ON sent unredacted text; offline reported `offline` with 0 requests; cancel reported `cancelled`; the Remote Config kill switch (flipped from the server, then restored) blocked cloud runs.
 - **Firebase**: Email sign-up → sandbox org bootstrap → "Cloud sync live"; approval proposed as Agent, approved as Manager, executed; data survived a reload (read back from Firestore); policy v2 saved through the rules; test accounts and data deleted afterwards. The same flow ran on the production URL with App Check in production mode.
 - **Security rules** (`npm run test:rules`, live against the project): **43/43** checks — org isolation, role ceilings, high-risk approvals, immutable evaluation, DENY never approvable, admin-only policy with safety invariants, no raw prompts in AI runs, append-only audit.
-- **Automated**: 67 unit tests (mocked SDK adapter in isolated tests only), 27 Playwright e2e on real Chrome (flows, roles, policy, privacy gate, palette, tour, offline banner, Arabic/RTL, no horizontal overflow at 320–1920 px), 2 PWA e2e on the production build (offline reload from the service worker cache). `typecheck`, `lint` (no warnings) and `build` pass.
+- **Automated**: 67 unit tests (mocked SDK adapter in isolated tests only), 28 Playwright e2e on real Chrome (flows, roles, policy, privacy gate, palette, tour, offline banner, Arabic/RTL, no horizontal overflow at 320–1920 px), 2 PWA e2e on the production build (offline reload from the service worker cache). `typecheck`, `lint` (no warnings) and `build` pass.
 
 ## Known limitations
 - Approval **policy re-evaluation is not server-side**: Firestore rules validate the stored decision, role ceilings and state machine but cannot recompute the policy (Cloud Functions need the Blaze plan; not enabled).
 - Orders, customers and conversations are a **synthetic in-app dataset**, not stored in Firestore.
 - Each signed-in user gets a personal sandbox org (admin). Inviting other members works through the rules (admin writes `orgs/{org}/members/{uid}`; tested live) but has no UI.
 - Arabic is a **beta of the interface only**; AI output and policy explanations stay English. Translations need native review.
-- Not exercised: Safari/Firefox, Windows/Linux, Google sign-in popup (Email/Password was tested), a Chrome without Gemini Nano for the app flows (cloud fallback was seen in the Lab). Cost comparisons are not shown (no measured billing data).
+- Not exercised: Safari/Firefox, Windows/Linux, completing a Google sign-in (the popup opens from the production site with no configuration error, but choosing an account is the user's step; Email/Password was tested end to end), a Chrome without Gemini Nano for the app flows (cloud fallback was seen in the Lab). Cost comparisons are not shown (no measured billing data).
 - Cancelling or timing out an on-device call frees the UI but Chrome may keep generating for a while; piling up local requests can delay later ones (see `docs/HYBRID_AI.md`).
 - Debug tokens work only on localhost dev builds; delete them in App Check when no longer needed.
 

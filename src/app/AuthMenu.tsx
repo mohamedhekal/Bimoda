@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { createPortal } from 'react-dom'
 import type { User } from 'firebase/auth'
 import { Button } from '../design-system/ui'
 import { authAvailable, friendlyAuthError, signInWithEmail, signInWithGoogle, signOutUser, signUpWithEmail, subscribeAuth } from '../firebase/auth'
@@ -56,71 +57,73 @@ export function AuthMenu() {
       <button className="rounded-lg border border-line px-3 py-1.5 text-xs text-ink hover:bg-surface2" onClick={() => setOpen(true)}>
         {t('Sign in')}
       </button>
-      {open && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" onMouseDown={(e) => e.target === e.currentTarget && setOpen(false)}>
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label={t('Sign in')}
-            onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}
-            className="w-full max-w-sm rounded-xl border border-line bg-surface p-5"
-          >
-            <h2 className="text-lg font-semibold">Sign in to Bimoda</h2>
-            <p className="mt-1 text-xs text-muted">Optional. The demo works without an account and uses synthetic data only.</p>
-            <Button className="mt-4 w-full" variant="ghost" disabled={busy} onClick={() => void attempt(signInWithGoogle)}>
-              Continue with Google
-            </Button>
-            <form onSubmit={submit} className="mt-4 space-y-3">
-              <label className="block text-sm">
-                Email
-                <input
-                  ref={first}
-                  type="email"
-                  required
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-line bg-bg p-2"
-                />
-              </label>
-              <label className="block text-sm">
-                Password
-                <input
-                  type="password"
-                  required
-                  minLength={6}
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-line bg-bg p-2"
-                />
-              </label>
-              {error && (
-                <p role="alert" className="rounded-lg border border-bad/50 bg-bad/10 p-2 text-xs text-bad">
-                  {error}
-                </p>
-              )}
-              <div className="flex gap-2">
-                <Button type="submit" className="flex-1" disabled={busy}>
-                  {t('Sign in')}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="flex-1"
-                  disabled={busy || !email || password.length < 6}
-                  onClick={() => void attempt(() => signUpWithEmail(email, password))}
-                >
-                  Create account
-                </Button>
-              </div>
-            </form>
-            <button className="mt-3 text-xs text-muted underline" onClick={() => setOpen(false)}>
-              Continue in demo mode
-            </button>
-          </div>
-        </div>
-      )}
+      {open &&
+        createPortal(
+          <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" onMouseDown={(e) => e.target === e.currentTarget && setOpen(false)}>
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label={t('Sign in')}
+              onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}
+              className="w-full max-w-sm rounded-xl border border-line bg-surface p-5"
+            >
+              <h2 className="text-lg font-semibold">Sign in to Bimoda</h2>
+              <p className="mt-1 text-xs text-muted">Optional. The demo works without an account and uses synthetic data only.</p>
+              <Button className="mt-4 w-full" variant="ghost" disabled={busy} onClick={() => void attempt(signInWithGoogle)}>
+                Continue with Google
+              </Button>
+              <form onSubmit={submit} className="mt-4 space-y-3">
+                <label className="block text-sm">
+                  Email
+                  <input
+                    ref={first}
+                    type="email"
+                    required
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-line bg-bg p-2"
+                  />
+                </label>
+                <label className="block text-sm">
+                  Password
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-line bg-bg p-2"
+                  />
+                </label>
+                {error && (
+                  <p role="alert" className="rounded-lg border border-bad/50 bg-bad/10 p-2 text-xs text-bad">
+                    {error}
+                  </p>
+                )}
+                <div className="flex gap-2">
+                  <Button type="submit" className="flex-1" disabled={busy}>
+                    {t('Sign in')}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="flex-1"
+                    disabled={busy || !email || password.length < 6}
+                    onClick={() => void attempt(() => signUpWithEmail(email, password))}
+                  >
+                    Create account
+                  </Button>
+                </div>
+              </form>
+              <button className="mt-3 text-xs text-muted underline" onClick={() => setOpen(false)}>
+                Continue in demo mode
+              </button>
+            </div>
+          </div>,
+          document.body, // portal: the header's backdrop-filter would otherwise become the containing block of this fixed overlay
+        )}
     </>
   )
 }

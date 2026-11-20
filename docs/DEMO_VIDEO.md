@@ -6,7 +6,7 @@ Before recording: open the Lab once and press **Enable Local AI** (the first mod
 
 | Time | Scene | Do | Say (caption) |
 |---|---|---|---|
-| 0:00–0:15 | Problem | Show the landing page hero | "Support teams drown in messages that mix pricing, locked shipments, returns and even prompt injection. Cloud-only AI leaks data and can't explain itself." |
+| 0:00–0:15 | Problem | Show the landing page hero | "Support teams drown in messages that mix pricing, locked shipments, returns and even prompt injection. Cloud-only AI requires sending data off-device, which adds privacy and connectivity considerations." |
 | 0:15–0:30 | Product | Click **Try Bimoda**; Mission Control | "Bimoda is a privacy-aware ops copilot built on Firebase AI Logic hybrid inference." |
 | 0:30–1:05 | Real case | Workspace → **ORD-1006** (injection) → **Analyze conversation** | "A real request through Firebase AI Logic. The badge reads the SDK's inferenceSource: processed on this device. The injection is flagged and ignored." |
 | 1:05–1:40 | Hybrid Lab | Lab → **Run all three**; point at A (device), B (cloud), C (hybrid); then switch to **Local only** and press **Run B** | "Same case, three preferences, real results with source and duration. In Local Only mode the cloud path is blocked: zero network requests." |

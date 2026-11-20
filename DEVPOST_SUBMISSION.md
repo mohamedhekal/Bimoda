@@ -13,7 +13,7 @@
 A privacy-aware AI operations copilot that helps e-commerce teams resolve operational issues using on-device and cloud intelligence through Firebase AI Logic, with a deterministic policy engine and human approval in the loop.
 
 ## Inspiration
-Support and fulfillment teams juggle messages that mix pricing confusion, locked shipments, ambiguous addresses, disputed returns and even prompt-injection attempts. Cloud-only AI sends customer data off the device and cannot explain or safely limit what it proposes. We wanted an assistant that keeps data local when it can, says exactly where each answer was produced, and can never silently change an order.
+Support and fulfillment teams juggle messages that mix pricing confusion, locked shipments, ambiguous addresses, disputed returns and even prompt-injection attempts. Cloud-only AI requires sending customer data off the device, which adds privacy and connectivity considerations, and a model alone should not decide what is allowed. We wanted an assistant that keeps data local when it can, says exactly where each answer was produced, and can never silently change an order.
 
 ## What it does
 - **Conversation intelligence:** intent, issue, tone, urgency, missing information, order references and a proposed action, as Zod-validated JSON. Customer text is treated as untrusted data; injection attempts are flagged and not followed.
@@ -38,7 +38,7 @@ Support and fulfillment teams juggle messages that mix pricing confusion, locked
 | Hosting | https://bimoda.web.app |
 
 ## How we built it
-React + TypeScript (strict) + Vite + Tailwind; Zod validation for every AI output; Playwright (27 e2e + 2 PWA e2e on real Chrome), Vitest (67 tests), and a live security-rules test (`npm run test:rules`, 43 checks against the real project).
+React + TypeScript (strict) + Vite + Tailwind; Zod validation for every AI output; Playwright (28 e2e + 2 PWA e2e on real Chrome), Vitest (67 tests), and a live security-rules test (`npm run test:rules`, 43 checks against the real project).
 
 ## Challenges we faced
 - On-device availability and hangs: Chrome's model session can stall; we added a per-call timeout and cancel and treat on-device calls as able to hang. Arrays without `maxItems` made Gemini Nano generate until timeout; we keep array limits in the constraint schema.
