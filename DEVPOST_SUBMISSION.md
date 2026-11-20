@@ -59,6 +59,9 @@ Server-side policy re-evaluation (Cloud Functions on the Blaze plan), the same e
 ## Disclosure
 Built during the submission period with an AI coding assistant (Claude Code). No pre-existing project code was reused.
 
+## Verification status of the deployed build
+Deployed commit `b0a7936` (main, CI green). Re-checked live after deploy: cloud inference, App Check in production, Remote Config live updates, the Trust Center (policy 40/40, 77/77 prohibited approval attempts refused), approvals and Firestore sync. The on-device path was verified earlier on the same site but not re-run after this deploy because Chrome's local model was unresponsive; re-run Lab A and C on a healthy Chrome before recording the video.
+
 ## Submission checklist
 - [x] Public repository: https://github.com/mohamedhekal/Bimoda; `LICENSE` is Apache-2.0 (verify GitHub shows the license badge)
 - [ ] README explains setup, Firebase configuration and testing (it does; re-read once)
