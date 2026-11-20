@@ -13,6 +13,7 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 
+performance.setResourceTimingBufferSize?.(2000) // keep enough Resource Timing entries to measure AI endpoint requests per run
 void initRemoteConfig() // operator-controlled values; defaults apply until (or unless) the fetch succeeds
 
 // PWA app shell: production builds only, so dev hot-reload is never served from a stale cache.

@@ -80,4 +80,6 @@ export interface AiRunRecord {
 export interface EngineResult {
   record: AiRunRecord
   text?: string
+  /** Measured facts about this run (not persisted) */
+  evidence?: { aiEndpointRequests: number }
 }

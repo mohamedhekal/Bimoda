@@ -1,4 +1,5 @@
 import { redact } from '../privacy/redact'
+import { planRoute } from './route'
 import type { AiRunRecord, EngineRequest, EngineResult, InferencePreference, InferenceSource, ModelAdapter, PrivacySettings, RunStatus } from './types'
 
 export interface EngineDeps {
@@ -13,8 +14,6 @@ export interface EngineDeps {
   cloudEnabled?: () => boolean
   onRecord?: (r: AiRunRecord) => void
 }
-
-const CLOUD_CAPABLE = (p: InferencePreference) => p !== 'ONLY_ON_DEVICE'
 
 /** Default preference for features, derived from the user's privacy mode. */
 export function defaultPreference(mode: PrivacySettings['privacyMode']): InferencePreference {
@@ -46,47 +45,38 @@ export class HybridEngine {
       redactionApplied: false,
       timestamp: new Date().toISOString(),
     }
+    const aiRequestsBefore = countAiEndpointRequests()
     const finish = (status: RunStatus, extra: Partial<AiRunRecord> = {}, text?: string): EngineResult => {
       const record: AiRunRecord = { ...base, status, durationMs: Math.round(now() - t0), ...extra }
       this.deps.onRecord?.(record)
-      return { record, text }
+      // Measured with the browser's Resource Timing API (not inferred): requests to the AI model endpoints during this run.
+      return { record, text, evidence: { aiEndpointRequests: Math.max(0, countAiEndpointRequests() - aiRequestsBefore) } }
     }
 
-    // 1. Privacy policy gate (runs before any model is touched)
-    let effective = req.preference
-    const cloudOff = this.deps.cloudEnabled ? !this.deps.cloudEnabled() : false
-    if (settings.privacyMode === 'local-only' || cloudOff) {
-      if (effective === 'ONLY_IN_CLOUD' || effective === 'PREFER_IN_CLOUD')
-        return finish('blocked_privacy', {
-          reason:
-            cloudOff && settings.privacyMode !== 'local-only'
-              ? 'Cloud inference is switched off by the operator (Remote Config).'
-              : 'Local Only mode forbids cloud inference.',
-        })
-      // PREFER_ON_DEVICE could silently fall back to the cloud, so it is tightened.
-      effective = 'ONLY_ON_DEVICE'
-    }
+    // 1. Privacy routing plan (pure, runs before any model is touched; see route.ts)
+    const plan = planRoute({
+      privacyMode: settings.privacyMode,
+      preference: req.preference,
+      cloudEnabled: this.deps.cloudEnabled ? this.deps.cloudEnabled() : true,
+      online,
+      allowIdentifiableCloud: settings.allowIdentifiableCloud,
+      needsIdentifiable: req.needsIdentifiable,
+    })
+    const effective = plan.effective
     base.effectivePreference = effective
+    if (plan.blocked?.status === 'blocked_privacy') return finish('blocked_privacy', { reason: plan.blocked.reason })
+    if (plan.blocked?.status === 'consent_required') return finish('consent_required', { effectivePreference: effective, reason: plan.blocked.reason })
 
     let prompt = req.prompt
-    const cloudCapable = CLOUD_CAPABLE(effective)
-    if (cloudCapable) {
-      if (req.needsIdentifiable && !settings.allowIdentifiableCloud)
-        return finish('consent_required', {
-          effectivePreference: effective,
-          reason: 'This feature needs identifiable text and the request may reach the cloud. Consent is required.',
-        })
-      if (!settings.allowIdentifiableCloud) {
-        const r = redact(req.prompt, req.entities)
-        prompt = r.text
-        base.redactions = r.count
-        base.redactionApplied = true
-      }
+    if (plan.redact) {
+      const r = redact(req.prompt, req.entities)
+      prompt = r.text
+      base.redactions = r.count
+      base.redactionApplied = true
     }
 
     // 2. Connectivity (never fabricate offline output)
-    if (!online && effective === 'ONLY_IN_CLOUD')
-      return finish('offline', { effectivePreference: effective, reason: 'Device is offline and this request is cloud-only.' })
+    if (plan.blocked?.status === 'offline') return finish('offline', { effectivePreference: effective, reason: plan.blocked.reason })
 
     // 3. Configuration
     if (!this.deps.adapter)
@@ -141,6 +131,15 @@ export class HybridEngine {
       clearTimeout(timer)
       req.signal?.removeEventListener('abort', onUserAbort)
     }
+  }
+}
+
+/** Counts completed requests to the Gemini model endpoints. Other Firebase traffic (App Check, Auth, Firestore, Remote Config) is intentionally excluded. */
+export function countAiEndpointRequests(): number {
+  try {
+    return performance.getEntriesByType('resource').filter((e) => /firebasevertexai\.googleapis\.com|generativelanguage\.googleapis\.com/.test(e.name)).length
+  } catch {
+    return 0
   }
 }
 

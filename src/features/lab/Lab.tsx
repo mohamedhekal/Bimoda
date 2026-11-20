@@ -6,7 +6,7 @@ import { LAB_CASE, labPrompt } from '../../ai/prompts/prompts'
 import { Badge, Button, Card, SourceBadge } from '../../design-system/ui'
 import { cx, statusTone } from '../../design-system/utils'
 import { isFirebaseConfigured, appCheckState } from '../../firebase/app'
-import { initRemoteConfig, rcBool, rcNumber, rcStatus } from '../../firebase/remoteConfig'
+import { initRemoteConfig, rcBool, rcInfo, rcNumber } from '../../firebase/remoteConfig'
 import { useAppState } from '../../stores/store'
 import { STAGES, stageStates } from './stages'
 import { useT } from '../../i18n'
@@ -127,7 +127,9 @@ export function Lab() {
               <dd>{appCheckState}</dd>
               <dt className="text-muted">Remote Config</dt>
               <dd>
-                {rcStatus} · timeout {Math.round(rcNumber('ai_timeout_ms') / 1000)}s · cloud {rcBool('cloud_inference_enabled') ? 'on' : 'OFF'}
+                {rcInfo().status}
+                {rcInfo().realtime ? '+realtime' : ''} · timeout {Math.round(rcNumber('ai_timeout_ms') / 1000)}s · cloud{' '}
+                {rcBool('cloud_inference_enabled') ? 'on' : 'OFF'}
               </dd>
               <dt className="text-muted">Firebase</dt>
               <dd>{isFirebaseConfigured ? 'configured' : 'missing env'}</dd>
