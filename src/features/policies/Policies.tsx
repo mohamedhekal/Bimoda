@@ -3,6 +3,7 @@ import { DEFAULT_POLICY, validatePolicyConfig, type PolicyConfig } from '../../d
 import { Badge, Button, Card } from '../../design-system/ui'
 import { logAudit, savePolicy, setState, useAppState } from '../../stores/store'
 import { useT } from '../../i18n'
+import { PolicySimulator } from './Simulator'
 
 export function Policies() {
   const t = useT()
@@ -36,7 +37,7 @@ export function Policies() {
   )
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
+    <div className="mx-auto max-w-4xl space-y-4">
       <div>
         <h1 className="text-2xl font-semibold">{t('Policy Studio')}</h1>
         <p className="text-sm text-muted">
@@ -121,6 +122,7 @@ export function Policies() {
           </span>
         </label>
       </Card>
+      <PolicySimulator />
     </div>
   )
 }

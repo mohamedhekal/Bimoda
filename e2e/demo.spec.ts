@@ -5,6 +5,8 @@ const skipTour = (page: Page) =>
   page.addInitScript(() => {
     if (!localStorage.getItem('bimoda.state.v1')) localStorage.setItem('bimoda.state.v1', JSON.stringify({ settings: { toured: true } }))
   })
+// Scope assertions to one card: the same facts now also appear in the decision trace.
+const card = (page: Page, title: string) => page.locator('section', { has: page.getByRole('heading', { name: title, exact: true }) })
 const openCase = (page: Page, order: string) =>
   page
     .getByRole('button', { name: new RegExp(order) })
@@ -12,7 +14,7 @@ const openCase = (page: Page, order: string) =>
     .click()
 const propose = async (page: Page, action: string) => {
   await page.getByLabel('Action to evaluate').selectOption(action)
-  await page.getByRole('button', { name: 'Propose' }).click()
+  await page.getByRole('button', { name: 'Propose', exact: true }).click()
 }
 
 test.describe('demo flows', () => {
@@ -48,7 +50,7 @@ test.describe('demo flows', () => {
   test('selecting a case shows order details and the pricing inconsistency (scenario A)', async ({ page }) => {
     await page.goto('/app/workspace')
     await openCase(page, 'ORD-1001')
-    await expect(page.getByText('free shipping applied')).toBeVisible()
+    await expect(card(page, 'Order').getByText('free shipping applied')).toBeVisible()
     await expect(page.getByRole('alert').filter({ hasText: 'Confirmation message stated $148.00' })).toContainText('$162.00')
   })
 
@@ -56,7 +58,7 @@ test.describe('demo flows', () => {
     await page.goto('/app/workspace')
     await openCase(page, 'ORD-1002')
     await propose(page, 'CHANGE_VARIANT')
-    await expect(page.getByText('DENY', { exact: true })).toBeVisible()
+    await expect(card(page, 'Policy check').getByText('DENY', { exact: true })).toBeVisible()
     await expect(page.getByText(/R-001 · policy v1/)).toBeVisible()
     await expect(page.getByText(/request_after_lock|Customer change request after fulfillment started/)).toBeVisible()
     await page.getByRole('link', { name: 'Audit & Runs' }).click()
@@ -68,14 +70,14 @@ test.describe('demo flows', () => {
     await openCase(page, 'ORD-1004')
     await expect(page.getByText(/do not restock or settle automatically/)).toBeVisible()
     await propose(page, 'RESTORE_INVENTORY')
-    await expect(page.getByText('DENY', { exact: true })).toBeVisible()
+    await expect(card(page, 'Policy check').getByText('DENY', { exact: true })).toBeVisible()
   })
 
   test('incomplete address needs more information (scenario C)', async ({ page }) => {
     await page.goto('/app/workspace')
     await openCase(page, 'ORD-1003')
     await propose(page, 'CHANGE_ADDRESS')
-    await expect(page.getByText('NEED MORE INFORMATION')).toBeVisible()
+    await expect(card(page, 'Policy check').getByText('NEED MORE INFORMATION')).toBeVisible()
   })
 
   test('approval workflow respects roles and ends in a simulated execution', async ({ page }) => {
@@ -108,12 +110,12 @@ test.describe('demo flows', () => {
     await page.goto('/app/policies')
     await expect(page.getByRole('button', { name: 'Validate and save' })).toBeDisabled()
     await page.getByLabel('Role').selectOption('admin')
-    await page.getByLabel('Require confirmed warehouse receipt').uncheck()
+    await card(page, 'Order and refund rules').getByLabel('Require confirmed warehouse receipt').uncheck()
     await page.getByRole('button', { name: 'Validate and save' }).click()
     await expect(page.getByRole('alert')).toContainText('requireWarehouseReceipt cannot be disabled')
     await page.getByRole('button', { name: 'Load defaults' }).click()
     await page.getByRole('button', { name: 'Validate and save' }).click()
-    await expect(page.getByRole('status')).toContainText('Saved as v2')
+    await expect(card(page, 'Order and refund rules').getByRole('status')).toContainText('Saved as v2')
   })
 
   test('Local Only mode blocks the cloud test and shows an honest state', async ({ page }) => {
@@ -183,7 +185,7 @@ for (const width of WIDTHS) {
   test(`no horizontal overflow at ${width}px on any page`, async ({ page }) => {
     await skipTour(page)
     await page.setViewportSize({ width, height: 900 })
-    for (const route of ['/', '/app', '/app/workspace', '/app/lab', '/app/policies', '/app/audit']) {
+    for (const route of ['/', '/app', '/app/workspace', '/app/lab', '/app/trust', '/app/policies', '/app/audit']) {
       await page.goto(route)
       await expect(page.locator('h1').first()).toBeAttached()
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
@@ -220,7 +222,7 @@ test.describe('Arabic (beta) and RTL', () => {
     test(`RTL has no horizontal overflow at ${width}px`, async ({ page }) => {
       await page.addInitScript(() => localStorage.setItem('bimoda.state.v1', JSON.stringify({ settings: { toured: true, lang: 'ar' } })))
       await page.setViewportSize({ width, height: 900 })
-      for (const route of ['/', '/app', '/app/workspace', '/app/lab', '/app/policies', '/app/audit']) {
+      for (const route of ['/', '/app', '/app/workspace', '/app/lab', '/app/trust', '/app/policies', '/app/audit']) {
         await page.goto(route)
         await expect(page.locator('h1').first()).toBeAttached()
         expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), `${route} @${width}`).toBeLessThanOrEqual(1)
@@ -234,7 +236,7 @@ test.describe('Arabic (beta) and RTL', () => {
     await page.getByRole('button', { name: /ORD-1002/ }).click()
     await page.getByLabel('Action to evaluate').selectOption('CHANGE_VARIANT')
     await page.getByRole('button', { name: 'اقترح' }).click()
-    await expect(page.getByText('DENY', { exact: true })).toBeVisible()
+    await expect(card(page, 'فحص السياسة').getByText('DENY', { exact: true })).toBeVisible()
   })
 })
 

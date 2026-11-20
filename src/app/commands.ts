@@ -26,6 +26,7 @@ export function useCommands(closeAndRun: (fn: () => void) => () => void, startTo
       go('nav-dash', 'Mission Control', '/app'),
       go('nav-ws', 'Workspace', '/app/workspace'),
       go('nav-lab', 'Hybrid AI Lab', '/app/lab'),
+      go('nav-trust', 'Trust Center', '/app/trust'),
       go('nav-pol', 'Policy Studio', '/app/policies'),
       go('nav-audit', 'Audit & AI runs', '/app/audit'),
       go('nav-home', 'marketing site', '/'),

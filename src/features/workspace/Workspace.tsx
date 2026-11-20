@@ -13,6 +13,8 @@ import { Badge, Card } from '../../design-system/ui'
 import { cx } from '../../design-system/utils'
 import { useAppState } from '../../stores/store'
 import { submitProposal } from './approvals'
+import { buildDecisionTrace } from '../../domain/trace'
+import { DecisionGraph } from './DecisionGraph'
 import { IntelligencePanel } from './IntelligencePanel'
 import { localeOf, useLang, useT } from '../../i18n'
 
@@ -340,6 +342,17 @@ export function Workspace() {
             </ul>
           )}
         </Card>
+        <DecisionGraph
+          nodes={buildDecisionTrace({
+            conversation: convo,
+            order,
+            analysis: analysis[selectedId],
+            evaluation: evals[selectedId]?.[0],
+            approvals: allApprovals.filter((x) => x.conversationId === selectedId),
+            role: settings.role,
+            signals,
+          })}
+        />
       </div>
 
       {/* Intelligence */}

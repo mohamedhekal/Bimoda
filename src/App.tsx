@@ -7,6 +7,7 @@ import { Policies } from './features/policies/Policies'
 import { Audit } from './features/audit/Audit'
 // Not lazy-loaded on purpose: every route must be in the first bundle so the offline app shell can cache it.
 import { Lab } from './features/lab/Lab'
+import { TrustCenter } from './features/trust/TrustCenter'
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
           <Route index element={<Dashboard />} />
           <Route path="workspace" element={<Workspace />} />
           <Route path="lab" element={<Lab />} />
+          <Route path="trust" element={<TrustCenter />} />
           <Route path="policies" element={<Policies />} />
           <Route path="audit" element={<Audit />} />
         </Route>

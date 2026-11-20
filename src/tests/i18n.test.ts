@@ -12,7 +12,7 @@ describe('Arabic (beta) translations', () => {
   it('has a translation for every literal passed to t(...) in the source', () => {
     const missing = new Set<string>()
     for (const file of walk('src')) {
-      for (const m of readFileSync(file, 'utf8').matchAll(/\bt\('((?:[^'\\]|\\.)*)'\)/g)) {
+      for (const m of readFileSync(file, 'utf8').matchAll(/\bt\(\s*'((?:[^'\\]|\\.)*)'\s*,?\s*\)/g)) {
         const key = m[1]!.replace(/\\'/g, "'")
         if (!(key in ar)) missing.add(`${file}: ${key}`)
       }
