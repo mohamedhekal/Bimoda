@@ -1,0 +1,19 @@
+{
+  "parameters": {
+    "cloud_model": {
+      "defaultValue": { "value": "gemini-3.5-flash-lite" },
+      "valueType": "STRING",
+      "description": "Cloud model used for structured requests (hybrid fallback / cloud-only)."
+    },
+    "ai_timeout_ms": {
+      "defaultValue": { "value": "45000" },
+      "valueType": "NUMBER",
+      "description": "Max wait for one model call before the engine reports a timeout."
+    },
+    "cloud_inference_enabled": {
+      "defaultValue": { "value": "true" },
+      "valueType": "BOOLEAN",
+      "description": "Operator kill switch. When false the app behaves like Local Only mode and never calls the cloud."
+    }
+  }
+}

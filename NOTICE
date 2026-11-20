@@ -1,0 +1,11 @@
+Bimoda
+Copyright 2026 Mohamed Hekal
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Built for the Google Firebase #BuildHybridAI 2026 hackathon.
+Developed with the assistance of an AI coding assistant (Claude Code); no pre-existing project code was reused.
+
+This product includes software developed by third parties under their own licenses
+(React, Vite, Tailwind CSS, Firebase JS SDK, Zod, Recharts, Motion, Lucide, Playwright, Vitest and others);
+see each package's license in node_modules.

@@ -1,0 +1,127 @@
+rules_version = '2';
+
+// Bimoda Firestore rules.
+//
+// Model: every signed-in user owns a personal sandbox organization `demo-<uid>` and is its admin. Other members
+// (agent / manager / admin) are added by an admin under orgs/{orgId}/members/{uid}. The membership document is the
+// ONLY source of a user's maximum role; clients may act as any role up to that maximum (`actingRole`), never above it.
+//
+// What these rules enforce server-side (no Cloud Functions needed, so it works on the Spark plan):
+//  - organization isolation: only members read or write an org's data
+//  - role ceilings: approving/rejecting/executing requires an acting role the member actually holds
+//  - high-risk approvals (rules R-002, R-006) need acting role manager or admin
+//  - approval state machine: transitions are validated, evaluation/action/order are immutable
+//  - DENY and NEED_MORE_INFORMATION decisions can never become approvals
+//  - policy writes: admin only, schema + safety invariants (receipt check and message approval cannot be disabled)
+//  - AI run records: create-only metadata, raw prompts rejected; audit events: append-only
+// Limits: rules cannot re-run the policy engine or check timestamps; the stored decision is trusted from the writer.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function orgPath(orgId) { return /databases/$(database)/documents/orgs/$(orgId); }
+    function memberPath(orgId, uid) { return /databases/$(database)/documents/orgs/$(orgId)/members/$(uid); }
+    function isMember(orgId) { return signedIn() && exists(memberPath(orgId, request.auth.uid)); }
+    function rank(role) { return role == 'admin' ? 3 : (role == 'manager' ? 2 : (role == 'agent' ? 1 : 0)); }
+    function maxRank(orgId) { return rank(get(memberPath(orgId, request.auth.uid)).data.role); }
+    // may the caller act as `role` in this org?
+    function canAct(orgId, role) { return isMember(orgId) && rank(role) > 0 && rank(role) <= maxRank(orgId); }
+    function highRisk(ruleId) { return ruleId == 'R-002' || ruleId == 'R-006'; }
+
+    match /orgs/{orgId} {
+      allow read: if isMember(orgId);
+      // bootstrap only: a user creates their own sandbox org
+      allow create: if signedIn()
+        && orgId == 'demo-' + request.auth.uid
+        && request.resource.data.keys().hasOnly(['name', 'ownerUid', 'createdAt'])
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.name is string && request.resource.data.name.size() <= 80;
+      allow update, delete: if false;
+
+      match /members/{uid} {
+        // own membership may be read even when it does not exist yet (bootstrap detection); others only by members
+        allow read: if signedIn() && (uid == request.auth.uid || isMember(orgId));
+        // the owner becomes admin of the org created in the same batch; afterwards only admins manage members
+        allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['role', 'email', 'createdAt'])
+          && request.resource.data.role in ['agent', 'manager', 'admin']
+          && (
+            (uid == request.auth.uid && request.resource.data.role == 'admin'
+              && getAfter(orgPath(orgId)).data.ownerUid == request.auth.uid && !isMember(orgId))
+            || canAct(orgId, 'admin')
+          );
+        allow update: if canAct(orgId, 'admin')
+          && uid != request.auth.uid
+          && request.resource.data.keys().hasOnly(['role', 'email', 'createdAt'])
+          && request.resource.data.role in ['agent', 'manager', 'admin'];
+        allow delete: if canAct(orgId, 'admin') && uid != request.auth.uid;
+      }
+
+      match /policy/{docId} {
+        allow read: if isMember(orgId);
+        allow create, update: if docId == 'current'
+          && canAct(orgId, 'admin')
+          && request.resource.data.keys().hasOnly(['version', 'editLockFrom', 'maxEditValueCents', 'refundApprovalThresholdCents', 'requireWarehouseReceipt', 'messagesRequireApproval', 'updatedBy'])
+          && request.resource.data.version is int
+          && request.resource.data.version > (resource == null ? 0 : resource.data.version)
+          && request.resource.data.editLockFrom in ['processing', 'packed', 'shipped']
+          && request.resource.data.maxEditValueCents is int && request.resource.data.maxEditValueCents >= 0 && request.resource.data.maxEditValueCents <= 5000000
+          && request.resource.data.refundApprovalThresholdCents is int && request.resource.data.refundApprovalThresholdCents >= 0 && request.resource.data.refundApprovalThresholdCents <= 5000000
+          && request.resource.data.refundApprovalThresholdCents <= request.resource.data.maxEditValueCents * 10
+          && request.resource.data.requireWarehouseReceipt == true
+          && request.resource.data.messagesRequireApproval == true
+          && request.resource.data.updatedBy == request.auth.uid;
+        allow delete: if false;
+      }
+
+      match /aiRuns/{runId} {
+        allow read: if isMember(orgId);
+        allow create: if isMember(orgId)
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.keys().hasOnly(['id', 'feature', 'requestedPreference', 'effectivePreference', 'privacyMode', 'source', 'sourceBasis', 'status', 'durationMs', 'inputChars', 'redactions', 'redactionApplied', 'reason', 'timestamp', 'userId'])
+          && request.resource.data.status in ['success', 'unavailable', 'blocked_privacy', 'consent_required', 'offline', 'config_missing', 'cancelled', 'error']
+          && request.resource.data.privacyMode in ['hybrid', 'local-only', 'cloud']
+          && request.resource.data.durationMs is int && request.resource.data.inputChars is int
+          && (request.resource.data.source == null || request.resource.data.source in ['ON_DEVICE', 'IN_CLOUD']);
+        allow update, delete: if false;
+      }
+
+      match /audit/{eventId} {
+        allow read: if isMember(orgId);
+        allow create: if isMember(orgId)
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.keys().hasOnly(['id', 'at', 'actor', 'action', 'entity', 'correlationId', 'uid'])
+          && request.resource.data.action is string && request.resource.data.action.size() <= 200;
+        allow update, delete: if false;
+      }
+
+      match /approvals/{approvalId} {
+        allow read: if isMember(orgId);
+
+        allow create: if canAct(orgId, request.resource.data.actingRole)
+          && request.resource.data.createdBy == request.auth.uid
+          && request.resource.data.keys().hasOnly(['id', 'conversationId', 'orderId', 'action', 'label', 'state', 'evaluation', 'proposedBy', 'createdBy', 'actingRole', 'createdAt', 'updatedAt'])
+          && request.resource.data.evaluation.decision in ['ALLOW', 'REQUIRE_APPROVAL']
+          && (
+            (request.resource.data.evaluation.decision == 'ALLOW' && request.resource.data.state == 'suggested')
+            || (request.resource.data.evaluation.decision == 'REQUIRE_APPROVAL' && request.resource.data.state == 'pending_approval')
+          );
+
+        // only state/reviewer/note/updatedAt may change; everything about what is being approved is immutable
+        allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['state', 'reviewer', 'reviewerRole', 'reviewerUid', 'note', 'updatedAt'])
+          && canAct(orgId, request.resource.data.reviewerRole)
+          && request.resource.data.reviewerUid == request.auth.uid
+          && (
+            // approve or reject
+            (resource.data.state == 'pending_approval'
+              && request.resource.data.state in ['approved', 'rejected']
+              && (request.resource.data.state == 'rejected' || !highRisk(resource.data.evaluation.ruleId) || rank(request.resource.data.reviewerRole) >= 2))
+            // execute (simulated)
+            || ((resource.data.state == 'approved' || (resource.data.state == 'suggested' && resource.data.evaluation.decision == 'ALLOW'))
+              && request.resource.data.state == 'executed')
+          );
+        allow delete: if false;
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "Bimoda — Hybrid Commerce Intelligence",
+  "short_name": "Bimoda",
+  "description": "Privacy-aware hybrid AI operations copilot for e-commerce teams.",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#09111f",
+  "theme_color": "#09111f",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
