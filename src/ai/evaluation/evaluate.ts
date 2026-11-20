@@ -69,27 +69,78 @@ export function scoreScenario(
   }
 }
 
+/** Consecutive runs without an answer after which the evaluation stops instead of piling requests onto a stuck model. */
+export const STOP_AFTER_FAILURES = 3
+const NO_ANSWER: ScenarioResult['status'][] = ['unavailable', 'error', 'offline', 'blocked_privacy', 'consent_required', 'config_missing']
+/** Free-tier Gemini quotas limit requests per minute (observed: HTTP 429 after ~14 quick cloud calls), so cloud-capable runs are paced. */
+export const CLOUD_PACE_MS = 4000
+export const RATE_LIMIT_WAIT_MS = 20_000
+export const isRateLimited = (reason?: string): boolean => !!reason && /\b429\b|quota|rate.?limit|resource.?exhausted/i.test(reason)
+
+const defaultSleep = (ms: number, signal?: AbortSignal) =>
+  new Promise<void>((resolve) => {
+    const t = setTimeout(resolve, ms)
+    signal?.addEventListener(
+      'abort',
+      () => {
+        clearTimeout(t)
+        resolve()
+      },
+      { once: true },
+    )
+  })
+
 export async function runAiEvaluation(p: {
   engine: HybridEngine
   scenarios: EvalScenario[]
   preference: InferencePreference
   signal?: AbortSignal
+  stopAfterFailures?: number
+  /** Delay between cloud-capable calls (default 4 s); on-device runs are never paced */
+  paceMs?: number
+  /** One retry after an HTTP 429 (default wait 20 s) */
+  rateLimitWaitMs?: number
+  sleep?: (ms: number, signal?: AbortSignal) => Promise<void>
+  /** Human-readable notes such as "rate limit reached, waiting" */
+  onNote?: (note: string) => void
   onProgress?: (done: number, total: number, last: ScenarioResult) => void
-}): Promise<ScenarioResult[]> {
+}): Promise<{ results: ScenarioResult[]; stoppedEarly: boolean }> {
   const out: ScenarioResult[] = []
+  const limit = p.stopAfterFailures ?? STOP_AFTER_FAILURES
+  const sleep = p.sleep ?? defaultSleep
+  const pace = p.preference === 'ONLY_ON_DEVICE' ? 0 : (p.paceMs ?? CLOUD_PACE_MS)
+  let streak = 0
+  let stoppedEarly = false
+  let lastTouchedCloud = false
   for (const s of p.scenarios) {
     if (p.signal?.aborted) break
+    // pace only after a request that actually reached the cloud endpoint (a cloud answer or a cloud error such as HTTP 429)
+    if (pace > 0 && lastTouchedCloud) await sleep(pace, p.signal)
+    if (p.signal?.aborted) break
     const order = getOrder(s.orderId)
-    const r = await analyzeConversation(p.engine, conversationFor(s), order, getCustomer(order.customerId), p.preference, p.signal, 'trust_center_eval')
+    const attempt = () => analyzeConversation(p.engine, conversationFor(s), order, getCustomer(order.customerId), p.preference, p.signal, 'trust_center_eval')
+    let r = await attempt()
+    if (!r.ok && r.record.status === 'error' && isRateLimited(r.error)) {
+      const wait = p.rateLimitWaitMs ?? RATE_LIMIT_WAIT_MS
+      p.onNote?.(`Rate limit reached (HTTP 429). Waiting ${Math.round(wait / 1000)} s, then retrying ${s.id} once.`)
+      await sleep(wait, p.signal)
+      if (!p.signal?.aborted) r = await attempt()
+    }
     const base = { id: s.id, source: r.record.source, durationMs: r.record.durationMs }
     const result: ScenarioResult = r.ok
       ? { ...base, status: 'success', analysis: r.data, ...scoreScenario(s, r.data) }
       : { ...base, status: r.kind === 'invalid_output' ? 'invalid_output' : r.record.status, reason: r.error }
     out.push(result)
+    lastTouchedCloud = result.source === 'IN_CLOUD' || result.status === 'error'
     p.onProgress?.(out.length, p.scenarios.length, result)
     if (r.record.status === 'cancelled') break
+    streak = NO_ANSWER.includes(result.status) ? streak + 1 : 0
+    if (streak >= limit && out.length < p.scenarios.length) {
+      stoppedEarly = true
+      break
+    }
   }
-  return out
+  return { results: out, stoppedEarly }
 }
 
 // ---------- 3. honest summary (every figure carries its denominator) ----------

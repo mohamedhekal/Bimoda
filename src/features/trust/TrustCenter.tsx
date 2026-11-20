@@ -14,6 +14,7 @@ interface Saved {
   preference: string
   privacyMode: string
   results: ScenarioResult[]
+  stoppedEarly?: boolean
 }
 const load = (): Saved | null => {
   try {
@@ -33,6 +34,7 @@ export function TrustCenter() {
   const [saved, setSaved] = useState<Saved | null>(load)
   const [live, setLive] = useState<ScenarioResult[] | null>(null)
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null)
+  const [note, setNote] = useState<string | null>(null)
   const [onlyProblems, setOnlyProblems] = useState(false)
   const [showAllPolicy, setShowAllPolicy] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
@@ -66,23 +68,26 @@ export function TrustCenter() {
     setRunScope(scope)
     setLive([])
     setProgress({ done: 0, total: list.length })
-    const results = await runAiEvaluation({
+    const { results, stoppedEarly } = await runAiEvaluation({
       engine,
       scenarios: list,
       preference: pref,
       signal: ctl.signal,
+      onNote: setNote,
       onProgress: (done, total, last) => {
+        setNote(null)
         setProgress({ done, total })
         setLive((p) => [...(p ?? []), last])
       },
     })
-    const next: Saved = { at: new Date().toISOString(), scope, preference: pref, privacyMode: settings.privacyMode, results }
+    const next: Saved = { at: new Date().toISOString(), scope, preference: pref, privacyMode: settings.privacyMode, results, stoppedEarly }
     try {
       localStorage.setItem(KEY, JSON.stringify(next))
     } catch {
       /* storage unavailable: results stay in memory */
     }
     setSaved(next)
+    setNote(null)
     setLive(null)
     setProgress(null)
     abortRef.current = null
@@ -206,6 +211,11 @@ export function TrustCenter() {
             </span>
           )}
         </div>
+        {note && (
+          <p role="status" className="mt-2 text-xs text-warn">
+            {note}
+          </p>
+        )}
         {progress && (
           <div
             role="progressbar"
@@ -265,6 +275,13 @@ export function TrustCenter() {
                 }
               />
             </div>
+            {saved?.stoppedEarly && !live && (
+              <p role="alert" className="mt-3 rounded-lg border border-warn/50 bg-warn/10 p-2 text-xs text-warn">
+                {t(
+                  'The run stopped early after 3 consecutive runs without an answer, to avoid piling requests onto a model that is not responding. Wait a minute or reload, then run it again.',
+                )}
+              </p>
+            )}
             {Object.keys(summary.engineFailures).length > 0 && (
               <p role="alert" className="mt-3 rounded-lg border border-warn/50 bg-warn/10 p-2 text-xs text-warn">
                 {t('Runs that produced no answer')}:{' '}

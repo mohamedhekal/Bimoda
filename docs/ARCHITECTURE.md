@@ -12,3 +12,9 @@
 - **i18n** (`src/i18n`): English strings are the keys; `ar.ts` holds the Arabic (beta) interface translations; a unit test fails if a `t('…')` literal has no translation. Logical CSS utilities + `dir="rtl"` handle mirroring; AI output stays English.
 - **PWA**: `public/sw.js` caches the app shell and hashed assets (production only), never cross-origin requests, so Firebase/AI calls always hit the network. Every route is in the first bundle so it can be cached.
 - **Design system**: `src/design-system` (ui + utils), Tailwind v4 tokens in `src/index.css`.
+
+## Trust layer (added for the hackathon)
+- **Route planner** (`ai/hybrid-engine/route.ts`): one pure function decides what the privacy gate allows (Local Only, operator switch, consent, offline, redaction). `HybridEngine` executes the plan; Privacy Proof Mode renders the same plan for every mode, so the explanation cannot drift from the behaviour. Each run also carries *measured* evidence: requests to the Gemini endpoints during the run (Resource Timing).
+- **Evaluation** (`ai/evaluation`, `domain/scenarios.ts`): 40 synthetic scenarios with hand-derived expected policy decisions. `runPolicySuite` is deterministic; `runAiEvaluation` runs real inference one scenario at a time (paced for cloud, early stop after 3 consecutive no-answer runs, one retry after HTTP 429) and `summarize` reports every rate with its denominator, separating model failures from wrong answers.
+- **Decision trace** (`domain/trace.ts`): turns request, AI interpretation, verified facts, policy evaluation, authorization and outcome into nodes labelled by origin (customer, model, deterministic, human).
+- **What-if simulator** (`domain/simulator.ts`): evaluates the scenarios under the current and a draft policy, read-only, rejecting unsafe drafts with the same validation as saving.

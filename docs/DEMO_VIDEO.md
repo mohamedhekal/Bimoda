@@ -1,21 +1,22 @@
 # Demo video script (target 2:50, hard limit 3:00)
 
-Use desktop Chrome 139+ with the Prompt API flag and Gemini Nano already downloaded, at https://bimoda.web.app (or localhost). Record at 1440×900, mic on, captions burned in. Nothing in the video may be faked: run each step live and show the badge that appears.
+Judging weighs Technological Implementation, Design, Potential Impact and Quality of the Idea equally, so the video shows **real** hybrid inference, then proves it is trustworthy. Run every step live; never fake a result. Use desktop Chrome 139+ with the Prompt API flag and Gemini Nano already downloaded, at https://bimoda.web.app (or localhost), 1440×900, mic on, captions burned in.
 
-Before recording: open the Lab once and press **Enable Local AI** (the first model load can take a while); set Privacy mode to **Hybrid**; Role **Agent**; skip the tour.
+Before recording: open the Lab once and press **Enable Local AI**; privacy mode **Hybrid**, role **Agent**, skip the tour. Wait a minute after any earlier heavy on-device use: a stuck local model makes the first answer slow (see `docs/HYBRID_AI.md`). Rehearse once so the cloud rate limit (free tier) is not hit: do not run the 40-scenario evaluation live; use the quick sample or show a result you ran just before.
 
 | Time | Scene | Do | Say (caption) |
 |---|---|---|---|
-| 0:00–0:15 | Problem | Show the landing page hero | "Support teams drown in messages that mix pricing, locked shipments, returns and even prompt injection. Cloud-only AI requires sending data off-device, which adds privacy and connectivity considerations." |
-| 0:15–0:30 | Product | Click **Try Bimoda**; Mission Control | "Bimoda is a privacy-aware ops copilot built on Firebase AI Logic hybrid inference." |
-| 0:30–1:05 | Real case | Workspace → **ORD-1006** (injection) → **Analyze conversation** | "A real request through Firebase AI Logic. The badge reads the SDK's inferenceSource: processed on this device. The injection is flagged and ignored." |
-| 1:05–1:40 | Hybrid Lab | Lab → **Run all three**; point at A (device), B (cloud), C (hybrid); then switch to **Local only** and press **Run B** | "Same case, three preferences, real results with source and duration. In Local Only mode the cloud path is blocked: zero network requests." |
-| 1:40–2:10 | Policy | Workspace → **ORD-1002** → Propose **Change variant** → DENY R-001; then **ORD-1004** → Restore inventory → DENY | "The model proposes, a deterministic policy decides. Shipped orders are locked, and courier status never proves warehouse receipt." |
-| 2:10–2:30 | Approval + backend | Sign in; Refund as Agent (approve disabled) → switch to Manager → approve → execute (simulated) | "Roles are enforced by Firestore security rules, not just the UI. Nothing real is executed." |
-| 2:30–2:50 | Insights + close | Mission Control → **Generate insights**; Audit page | "Counters come from real run records. Intelligent commerce operations shouldn't depend on one device, one model, or one connection." |
+| 0:00–0:15 | Problem | Landing hero | "Support teams get messages that mix pricing, locked shipments, returns and even prompt injection. Cloud-only AI requires sending data off-device, which adds privacy and connectivity considerations." |
+| 0:15–0:30 | Idea | **Try Bimoda** → Mission Control | "Bimoda is a hybrid AI ops copilot on Firebase AI Logic: it keeps data on the device when it can, and proves what happened." |
+| 0:30–1:05 | Real hybrid AI | Workspace → **ORD-1006** (injection) → **Analyze conversation** | "A real request. The badge shows the SDK's inferenceSource: processed on this device. The injection attempt is flagged and not followed." |
+| 1:05–1:35 | Decision trace | Scroll to **Decision trace**; expand Policy evaluation; propose **Refund** | "Every decision is explained step by step. Model text is purple; deterministic rules are cyan. The model proposes; only policy and a human can allow." |
+| 1:35–2:05 | Privacy proof | Lab → **Run all three**; show **Privacy Proof Mode** (matrix, redaction preview, measured AI-endpoint requests); Local only → Run B | "The same function the engine runs explains the routing for every privacy mode. We measure requests to the model endpoint: zero when blocked. This shows the prompt wasn't sent to the cloud model, not that the page makes no network calls." |
+| 2:05–2:35 | Trust Center | Trust Center → policy conformance 40/40 → the AI evaluation result you ran before (or the quick sample) | "Forty synthetic scenarios, real inference. Every number has its denominator. Model failures are listed separately, not counted as wrong answers." |
+| 2:35–2:50 | What-if + close | Policy Studio → What-if simulator: lock edits from *shipped* → affected scenarios | "Managers can test a policy change before applying it. Intelligent commerce operations shouldn't depend on one device, one model, or one connection." |
 
 ## Shot checklist
-- [ ] Landing hero, Mission Control, Workspace (ORD-1006 analysis with badge), Lab (A/B/C results), Local-only block, policy DENY ×2, approval flow, Audit page
-- [ ] Every AI badge visible for at least 2 seconds
-- [ ] No debug token, API secret or personal email visible (the sign-in dialog shows only the email you type: use a throwaway)
+- [ ] Badge visible for ≥ 2 s on every AI answer; decision trace legend visible
+- [ ] Privacy Proof matrix + the "measured" line; the scope note is not hidden
+- [ ] No debug token, API secret or personal email on screen (use a throwaway account if you show sign-in)
 - [ ] Final length ≤ 3:00 (only the first 3 minutes are judged)
+- [ ] Audio claims match the README ("Known limitations"); never say "server-enforced policy" or "zero network traffic"

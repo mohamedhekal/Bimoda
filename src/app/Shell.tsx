@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
-import { Activity, FlaskConical, Inbox, LayoutDashboard, ScrollText, Search, Shield, ShieldCheck, Sun, Moon, WifiOff } from 'lucide-react'
+import { Activity, FlaskConical, Inbox, LayoutDashboard, ScrollText, Search, Shield, BadgeCheck, Sun, Moon, WifiOff } from 'lucide-react'
 import { setState, setSync, useAppState, resetDemoData } from '../stores/store'
 import type { PrivacyMode } from '../ai/hybrid-engine/types'
 import type { Role } from '../domain/types'
@@ -19,7 +19,7 @@ const nav = [
   { to: '/app', label: 'Mission Control', short: 'Mission', icon: LayoutDashboard, end: true },
   { to: '/app/workspace', label: 'Workspace', short: 'Workspace', icon: Inbox },
   { to: '/app/lab', label: 'Hybrid AI Lab', short: 'Lab', icon: FlaskConical },
-  { to: '/app/trust', label: 'Trust Center', short: 'Trust', icon: ShieldCheck },
+  { to: '/app/trust', label: 'Trust Center', short: 'Trust', icon: BadgeCheck },
   { to: '/app/policies', label: 'Policy Studio', short: 'Policy', icon: Shield },
   { to: '/app/audit', label: 'Audit & Runs', short: 'Audit', icon: ScrollText },
 ]

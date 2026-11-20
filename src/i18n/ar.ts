@@ -297,6 +297,8 @@ export const ar: Record<string, string> = {
   '"Blocked but approvable" counts AI proposals that policy blocked yet could still become an approval. It is 0 by construction (blocked decisions cannot become approvals) and is shown so a regression would be visible.':
     '«محجوب لكنه قابل للموافقة» يحصي مقترحات حجبتها السياسة ويمكن مع ذلك أن تصبح موافقة. قيمته 0 بحكم التصميم (القرارات المحجوبة لا تتحول إلى موافقات) ويُعرض ليظهر أي تراجع.',
   'Results are stored in this browser only. Runs also appear in Audit & runs.': 'تُخزَّن النتائج في هذا المتصفح فقط. وتظهر التشغيلات أيضًا في التدقيق والتشغيلات.',
+  'The run stopped early after 3 consecutive runs without an answer, to avoid piling requests onto a model that is not responding. Wait a minute or reload, then run it again.':
+    'توقف التشغيل مبكرًا بعد 3 تشغيلات متتالية بلا إجابة، لتجنب تكديس الطلبات على نموذج لا يستجيب. انتظر دقيقة أو أعد التحميل ثم أعد التشغيل.',
   // language
   Language: 'اللغة',
   'AI output stays in English. Arabic is a beta of the interface only.': 'تبقى مخرجات الذكاء الاصطناعي بالإنجليزية. العربية نسخة تجريبية للواجهة فقط.',

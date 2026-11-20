@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { QUICK_SCENARIOS, SCENARIOS } from '../domain/scenarios'
-import { fmtRatio, runPolicySuite, scoreScenario, summarize, type ScenarioResult } from '../ai/evaluation/evaluate'
+import { isRateLimited, fmtRatio, runAiEvaluation, runPolicySuite, scoreScenario, summarize, type ScenarioResult } from '../ai/evaluation/evaluate'
+import { HybridEngine } from '../ai/hybrid-engine/engine'
+import type { AdapterResponse, ModelAdapter } from '../ai/hybrid-engine/types'
 import { DEFAULT_POLICY } from '../domain/policy'
 import { orders } from '../domain/seed'
 import type { ConversationAnalysis } from '../ai/validation/schemas'
@@ -110,5 +112,99 @@ describe('scoring and summary (no fabricated numbers)', () => {
     expect(sum.valid).toBe(0)
     expect(fmtRatio(sum.intentAccuracy)).toBe('n/a')
     expect(sum.latency.medianMs).toBeNull()
+  })
+})
+
+describe('AI evaluation runner', () => {
+  const engineWith = (generate: () => Promise<AdapterResponse>, timeoutMs = 1000) => {
+    const adapter: ModelAdapter = { generate, initializeDeviceModel: async () => {}, probeDevice: async () => ({ state: 'ready' }) }
+    return new HybridEngine({ adapter, getSettings: () => ({ privacyMode: 'hybrid', allowIdentifiableCloud: false }), isOnline: () => true, timeoutMs })
+  }
+  const valid = JSON.stringify({
+    intent: 'change_order',
+    mainIssue: 'Size swap',
+    sentiment: 'neutral',
+    urgency: 'medium',
+    keyDetails: [],
+    missingInformation: [],
+    orderReferences: [],
+    suggestedAction: 'MANUAL_REVIEW',
+    summary: 'Size swap request',
+    suspectedPromptInjection: false,
+  })
+
+  it('runs every scenario through the engine, validating and scoring real (here mocked, isolated test) output', async () => {
+    const { results, stoppedEarly } = await runAiEvaluation({
+      engine: engineWith(async () => ({ text: valid, sdkSource: 'IN_CLOUD' })),
+      scenarios: SCENARIOS.slice(0, 5),
+      preference: 'ONLY_IN_CLOUD',
+      paceMs: 0,
+    })
+    expect(stoppedEarly).toBe(false)
+    expect(results).toHaveLength(5)
+    expect(results.every((r) => r.status === 'success' && r.source === 'IN_CLOUD' && r.analysis)).toBe(true)
+  })
+  it('reports invalid model output separately from engine failures', async () => {
+    const { results } = await runAiEvaluation({
+      engine: engineWith(async () => ({ text: 'not json' })),
+      scenarios: SCENARIOS.slice(0, 2),
+      preference: 'ONLY_IN_CLOUD',
+      paceMs: 0,
+    })
+    expect(results.map((r) => r.status)).toEqual(['invalid_output', 'invalid_output'])
+  })
+  it('stops early after consecutive runs without an answer instead of piling up requests', async () => {
+    let calls = 0
+    const engine = engineWith(async () => {
+      calls++
+      throw new Error('On-device model is not available')
+    })
+    const { results, stoppedEarly } = await runAiEvaluation({ engine, scenarios: SCENARIOS.slice(0, 10), preference: 'ONLY_ON_DEVICE' })
+    expect(stoppedEarly).toBe(true)
+    expect(results).toHaveLength(3)
+    expect(calls).toBe(3)
+  })
+  it('a success resets the failure streak and a cancel stops the run', async () => {
+    let n = 0
+    const flaky = engineWith(async () =>
+      ++n % 3 === 0 ? { text: valid, sdkSource: 'ON_DEVICE' as const } : Promise.reject(new Error('On-device model is not available')),
+    )
+    const run = await runAiEvaluation({ engine: flaky, scenarios: SCENARIOS.slice(0, 9), preference: 'ONLY_ON_DEVICE' })
+    expect(run.stoppedEarly).toBe(false)
+    expect(run.results).toHaveLength(9)
+    const ctl = new AbortController()
+    ctl.abort()
+    expect((await runAiEvaluation({ engine: flaky, scenarios: SCENARIOS, preference: 'ONLY_ON_DEVICE', signal: ctl.signal })).results).toHaveLength(0)
+  })
+
+  it('paces cloud-capable runs but never on-device ones', async () => {
+    const waits: number[] = []
+    const sleep = async (ms: number) => void waits.push(ms)
+    const eng = engineWith(async () => ({ text: valid, sdkSource: 'IN_CLOUD' }))
+    await runAiEvaluation({ engine: eng, scenarios: SCENARIOS.slice(0, 3), preference: 'ONLY_IN_CLOUD', sleep })
+    expect(waits).toEqual([4000, 4000]) // between scenarios, not before the first
+    waits.length = 0
+    await runAiEvaluation({ engine: eng, scenarios: SCENARIOS.slice(0, 3), preference: 'ONLY_ON_DEVICE', sleep })
+    expect(waits).toEqual([])
+  })
+  it('waits and retries once after an HTTP 429, and tells the user why', async () => {
+    let n = 0
+    const notes: string[] = []
+    const waits: number[] = []
+    const eng = engineWith(async () =>
+      ++n === 1 ? Promise.reject(new Error('[429 ] You exceeded your current quota')) : { text: valid, sdkSource: 'IN_CLOUD' as const },
+    )
+    const { results } = await runAiEvaluation({
+      engine: eng,
+      scenarios: SCENARIOS.slice(0, 1),
+      preference: 'ONLY_IN_CLOUD',
+      sleep: async (ms) => void waits.push(ms),
+      onNote: (x) => notes.push(x),
+    })
+    expect(results[0]!.status).toBe('success')
+    expect(waits).toEqual([20_000])
+    expect(notes[0]).toMatch(/Rate limit reached \(HTTP 429\)/)
+    expect(isRateLimited('[429 ] You exceeded your current quota')).toBe(true)
+    expect(isRateLimited('Model output is not valid JSON')).toBe(false)
   })
 })
