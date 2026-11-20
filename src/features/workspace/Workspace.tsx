@@ -269,8 +269,10 @@ export function Workspace() {
               <Badge>{t(TYPE_LABEL[convo.type])}</Badge>
               <Badge>{order.fulfillment}</Badge>
               {latestEval && (
-                <span className="ms-auto pe-2" aria-hidden>
+                <span className="ms-auto flex flex-col items-end gap-1 pe-2" aria-hidden>
                   <DecisionBadge key={latestEval.timestamp} decision={latestEval.decision} large animate />
+                  {/* say which action was stamped: the latest evaluation may be a different action than the customer's request */}
+                  <span className="label-field font-mono">{String(latestEval.facts.action).replaceAll('_', ' ').toLowerCase()}</span>
                 </span>
               )}
             </div>
