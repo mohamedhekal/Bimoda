@@ -183,4 +183,42 @@ describe('Remote Config behaviour', () => {
     await m.initRemoteConfig()
     expect(m.rcNumber('ai_timeout_ms')).toBe(30_000)
   })
+
+  it('notifies the UI when the realtime update arrives, when a refresh fails, and when freshness changes', async () => {
+    sdk.state.pending = { cloud_inference_enabled: 'true' }
+    const m = await load()
+    await m.initRemoteConfig()
+    const seen: string[] = []
+    const off = m.subscribeRc(() => seen.push(`${m.getRcSnapshot().status}:${m.rcBool('cloud_inference_enabled')}`))
+    sdk.state.pending = { cloud_inference_enabled: 'false' }
+    sdk.state.observer!.next()
+    await vi.advanceTimersByTimeAsync(10)
+    expect(seen.at(-1)).toBe('live:false') // the screen can show the new value without a reload
+
+    sdk.state.failFetch = true
+    Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true })
+    document.dispatchEvent(new Event('visibilitychange'))
+    await vi.advanceTimersByTimeAsync(10)
+    expect(seen.at(-1)).toBe('stale:false')
+
+    sdk.state.failFetch = false
+    sdk.state.observer!.error()
+    expect(m.getRcSnapshot().realtime).toBe(false)
+    off()
+    const before = seen.length
+    sdk.state.observer!.next()
+    await vi.advanceTimersByTimeAsync(10)
+    expect(seen.length).toBe(before) // unsubscribed
+  })
+
+  it('time alone turns live into stale on screen (checked once a minute)', async () => {
+    sdk.state.pending = { cloud_inference_enabled: 'true' }
+    const m = await load()
+    await m.initRemoteConfig()
+    let renders = 0
+    m.subscribeRc(() => renders++)
+    await vi.advanceTimersByTimeAsync(m.STALE_AFTER_MS + 2 * 60_000)
+    expect(m.getRcSnapshot().status).toBe('stale')
+    expect(renders).toBeGreaterThan(0)
+  })
 })

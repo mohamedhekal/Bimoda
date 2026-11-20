@@ -39,7 +39,7 @@ Support and fulfillment teams juggle messages that mix pricing confusion, locked
 | Hosting | https://bimoda.web.app |
 
 ## How we built it
-React + TypeScript (strict) + Vite + Tailwind; Zod validation for every AI output; Playwright (38 e2e + 2 PWA e2e on real Chrome), Vitest (119 tests), and a live security-rules test (`npm run test:rules`, 46 checks against the real project).
+React + TypeScript (strict) + Vite + Tailwind; Zod validation for every AI output; Playwright (38 e2e + 2 PWA e2e on real Chrome), Vitest (121 tests), and a live security-rules test (`npm run test:rules`, 46 checks against the real project).
 
 ## Challenges we faced
 - On-device availability and hangs: Chrome's model session can stall; we added a per-call timeout and cancel and treat on-device calls as able to hang. Arrays without `maxItems` made Gemini Nano generate until timeout; we keep array limits in the constraint schema.

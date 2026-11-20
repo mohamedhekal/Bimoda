@@ -3,7 +3,8 @@ import { countAiEndpointRequests } from '../../ai/hybrid-engine/engine'
 import type { EngineResult, InferencePreference, PrivacyMode } from '../../ai/hybrid-engine/types'
 import { redact, type KnownEntities } from '../../ai/privacy/redact'
 import { Badge, Card } from '../../design-system/ui'
-import { rcBool, rcInfo } from '../../firebase/remoteConfig'
+import { rcBool } from '../../firebase/remoteConfig'
+import { useRcInfo } from '../../firebase/useRcInfo'
 import { useT } from '../../i18n'
 import { useAppState } from '../../stores/store'
 
@@ -18,6 +19,7 @@ const TOKENS = ['[CUSTOMER_NAME]', '[PHONE]', '[EMAIL]', '[ADDRESS]'] as const
 /** Explains the privacy gate with the same pure function the engine executes, plus diagnostic observations from the last real run (not proof). */
 export function PrivacyEvidence({ text, entities, last }: { text: string; entities: KnownEntities; last?: EngineResult }) {
   const t = useT()
+  const rc = useRcInfo()
   const settings = useAppState((s) => s.settings)
   const online = typeof navigator === 'undefined' ? true : navigator.onLine
   const cloudEnabled = rcBool('cloud_inference_enabled')
@@ -80,7 +82,7 @@ export function PrivacyEvidence({ text, entities, last }: { text: string; entiti
           </div>
           <p className="mt-2 text-[11px] text-muted">
             {t('Remote Config cloud switch')}: {cloudEnabled ? t('on') : t('OFF')} · {t('consent for identifiable text')}:{' '}
-            {settings.allowIdentifiableCloud ? t('on') : t('off')} · {online ? t('online') : t('offline')} · Remote Config: {rcInfo().status}
+            {settings.allowIdentifiableCloud ? t('on') : t('off')} · {online ? t('online') : t('offline')} · Remote Config: {rc.status}
           </p>
         </section>
 

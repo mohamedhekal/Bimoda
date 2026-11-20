@@ -6,7 +6,8 @@ import { LAB_CASE, labPrompt } from '../../ai/prompts/prompts'
 import { Badge, Button, Card, SourceBadge } from '../../design-system/ui'
 import { cx, statusTone } from '../../design-system/utils'
 import { isFirebaseConfigured, appCheckState } from '../../firebase/app'
-import { initRemoteConfig, rcBool, rcInfo, rcNumber } from '../../firebase/remoteConfig'
+import { initRemoteConfig, rcBool, rcNumber } from '../../firebase/remoteConfig'
+import { useRcInfo } from '../../firebase/useRcInfo'
 import { useAppState } from '../../stores/store'
 import { PrivacyEvidence } from './PrivacyEvidence'
 import { STAGES, stageStates } from './stages'
@@ -30,6 +31,7 @@ const DEVICE_TONE: Record<DeviceModelStatus['state'], 'ok' | 'bad' | 'warn'> = {
 
 export function Lab() {
   const t = useT()
+  const rc = useRcInfo() // live: re-renders on realtime updates, failures and staleness
   const [text, setText] = useState(LAB_CASE.customerText)
   const [dev, setDev] = useState<DeviceModelStatus>({ state: 'unknown' })
   const [progress, setProgress] = useState<number | null>(null)
@@ -40,10 +42,9 @@ export function Lab() {
   const cancelAll = useRef(false)
   const settings = useAppState((s) => s.settings)
 
-  const [, refresh] = useState(0)
   useEffect(() => {
     void getAdapter()?.probeDevice().then(setDev)
-    void initRemoteConfig().then(() => refresh((n) => n + 1)) // re-render once Remote Config values are known
+    void initRemoteConfig()
   }, [])
 
   const enableLocal = async () => {
@@ -128,8 +129,8 @@ export function Lab() {
               <dd>{appCheckState}</dd>
               <dt className="text-muted">Remote Config</dt>
               <dd>
-                {rcInfo().status}
-                {rcInfo().realtime ? '+realtime' : ''} · timeout {Math.round(rcNumber('ai_timeout_ms') / 1000)}s · cloud{' '}
+                {rc.status}
+                {rc.realtime ? '+realtime' : ''} · timeout {Math.round(rcNumber('ai_timeout_ms') / 1000)}s · cloud{' '}
                 {rcBool('cloud_inference_enabled') ? 'on' : 'OFF'}
               </dd>
               <dt className="text-muted">Firebase</dt>

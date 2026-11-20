@@ -20,6 +20,19 @@ export interface RcInfo {
 }
 
 let rc: RemoteConfig | null = null
+const listeners = new Set<() => void>()
+let snapshot: RcInfo | null = null
+/** Tell the UI that something observable changed (fetch outcome, realtime update, freshness). */
+const emit = () => {
+  snapshot = rcInfo()
+  listeners.forEach((l) => l())
+}
+export const subscribeRc = (cb: () => void): (() => void) => {
+  listeners.add(cb)
+  return () => void listeners.delete(cb)
+}
+/** Stable snapshot for useSyncExternalStore: only replaced by emit(). */
+export const getRcSnapshot = (): RcInfo => (snapshot ??= rcInfo())
 let lastError = false
 let realtime = false
 let unsubscribe: (() => void) | null = null
@@ -52,6 +65,7 @@ async function refresh(): Promise<void> {
   } catch {
     lastError = true // keep the last activated values (or the defaults); status becomes stale/error
   }
+  emit()
 }
 
 /** Fetches operator-controlled values and keeps them fresh. Never blocks startup and never throws. */
@@ -68,13 +82,19 @@ export async function initRemoteConfig(): Promise<RcStatus> {
       try {
         unsubscribe = onConfigUpdate(rc, {
           next: () => {
-            if (rc) void activate(rc).then(() => (lastError = false))
+            if (rc)
+              void activate(rc).then(() => {
+                lastError = false
+                emit()
+              })
           },
           error: () => {
             realtime = false
+            emit()
           },
           complete: () => {
             realtime = false
+            emit()
           },
         })
         realtime = true
@@ -85,8 +105,13 @@ export async function initRemoteConfig(): Promise<RcStatus> {
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') void refresh()
       })
+      // freshness depends on time: re-evaluate once a minute so "live" turns into "stale" on screen without any other event
+      setInterval(() => {
+        if (snapshot && rcInfo().status !== snapshot.status) emit()
+      }, 60_000)
     } catch {
       lastError = true
+      emit()
       return rcStatus()
     }
   }
