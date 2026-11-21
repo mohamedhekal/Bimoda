@@ -1,0 +1,7 @@
+build/
+DerivedData/
+xcuserdata/
+*.xcuserstate
+.swiftpm/
+# Firebase config for the app: download your own (see ios/README.md)
+Bimoda/GoogleService-Info.plist
