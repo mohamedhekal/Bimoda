@@ -10,6 +10,8 @@
 
 Video file: [demo-video/bimoda-demo.mp4](demo-video/bimoda-demo.mp4) · narration: [demo-video/narration.txt](demo-video/narration.txt)
 
+**Platforms:** Web (Chrome, this README) and a native **Android** client in [`android/`](android/README.md) built on the same Firebase AI Logic hybrid SDK. On Android, cloud inference, the hybrid fallback and the Local only block are verified on the emulator; on-device Gemini Nano is not yet verified on a physical device.
+
 Bimoda is a privacy-aware AI operations copilot for e-commerce teams. It analyzes customer conversations and order problems with **Firebase AI Logic hybrid inference** (Gemini Nano on-device in supported desktop Chrome, Gemini in the cloud otherwise). A **deterministic policy engine** decides what is allowed and a **human approves** anything risky. No real payment, refund, shipment or customer message is ever executed.
 
 ![Workspace: policy blocks an edit on a shipped order](docs/screenshots/workspace-policy-block.png)

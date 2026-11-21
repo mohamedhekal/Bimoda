@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Bimoda" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/desk</item>
+        <item name="android:statusBarColor">@color/desk</item>
+        <item name="android:navigationBarColor">@color/desk</item>
+    </style>
+    <color name="desk">#0A1D29</color>
+    <color name="marigold">#FFB238</color>
+</resources>
