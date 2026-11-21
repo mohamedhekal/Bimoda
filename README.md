@@ -4,6 +4,8 @@
 
 **Live demo: https://bimoda.web.app** (no sign-in needed, synthetic data) · Built for the **Google Firebase #BuildHybridAI 2026** hackathon (Web / Chrome) · Apache-2.0
 
+**Demo video (2:20):** [demo-video/bimoda-demo.mp4](demo-video/bimoda-demo.mp4) · narration in [demo-video/narration.txt](demo-video/narration.txt)
+
 Bimoda is a privacy-aware AI operations copilot for e-commerce teams. It analyzes customer conversations and order problems with **Firebase AI Logic hybrid inference** (Gemini Nano on-device in supported desktop Chrome, Gemini in the cloud otherwise). A **deterministic policy engine** decides what is allowed and a **human approves** anything risky. No real payment, refund, shipment or customer message is ever executed.
 
 ![Workspace: policy blocks an edit on a shipped order](docs/screenshots/workspace-policy-block.png)

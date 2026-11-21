@@ -1,0 +1,65 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1920
+PlayResY: 1080
+WrapStyle: 2
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: C,Helvetica Neue,42,&H00F2F3EE,&H00F2F3EE,&H18291D0A,&H18291D0A,-1,0,0,0,100,100,0,0,3,14,0,2,80,80,44,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.75,0:00:03.77,C,,0,0,0,,Every day, online stores get messages like these.
+Dialogue: 0,0:00:04.05,0:00:06.64,C,,0,0,0,,Change my address, after the order has shipped.
+Dialogue: 0,0:00:06.83,0:00:08.12,C,,0,0,0,,Refund me now.
+Dialogue: 0,0:00:08.41,0:00:10.63,C,,0,0,0,,And sometimes, a hidden instruction
+Dialogue: 0,0:00:10.65,0:00:12.11,C,,0,0,0,,aimed at the AI itself.
+Dialogue: 0,0:00:12.42,0:00:15.07,C,,0,0,0,,Rigid automation breaks on cases like these.
+Dialogue: 0,0:00:15.17,0:00:18.05,C,,0,0,0,,And sending every customer message to a cloud model
+Dialogue: 0,0:00:18.07,0:00:20.43,C,,0,0,0,,raises privacy and connectivity questions.
+Dialogue: 0,0:00:21.36,0:00:22.73,C,,0,0,0,,This is Bimoda.
+Dialogue: 0,0:00:22.97,0:00:25.29,C,,0,0,0,,A hybrid AI operations copilot,
+Dialogue: 0,0:00:25.31,0:00:27.33,C,,0,0,0,,built on Firebase AI Logic.
+Dialogue: 0,0:00:27.50,0:00:28.98,C,,0,0,0,,On the device when possible.
+Dialogue: 0,0:00:29.20,0:00:30.49,C,,0,0,0,,In the cloud when needed.
+Dialogue: 0,0:00:30.68,0:00:32.36,C,,0,0,0,,And it always tells you which.
+Dialogue: 0,0:00:33.31,0:00:34.58,C,,0,0,0,,Start on the landing page.
+Dialogue: 0,0:00:34.76,0:00:36.89,C,,0,0,0,,Switch the privacy mode, and the app's
+Dialogue: 0,0:00:36.91,0:00:38.41,C,,0,0,0,,real routing code responds.
+Dialogue: 0,0:00:38.58,0:00:40.65,C,,0,0,0,,Local only blocks the cloud route.
+Dialogue: 0,0:00:40.87,0:00:43.48,C,,0,0,0,,Hybrid tapes over names, phones and addresses
+Dialogue: 0,0:00:43.50,0:00:45.71,C,,0,0,0,,before anything may leave the browser.
+Dialogue: 0,0:00:46.60,0:00:48.06,C,,0,0,0,,Now, a real case. Order 1006.
+Dialogue: 0,0:00:48.29,0:00:50.89,C,,0,0,0,,The customer's message hides a prompt
+Dialogue: 0,0:00:50.91,0:00:53.52,C,,0,0,0,,injection, demanding a $5,000 refund.
+Dialogue: 0,0:00:53.54,0:00:56.67,C,,0,0,0,,One click, and Firebase AI Logic returns validated
+Dialogue: 0,0:00:56.69,0:00:59.51,C,,0,0,0,,JSON: intent, urgency, and a proposed action.
+Dialogue: 0,0:00:59.65,0:01:03.05,C,,0,0,0,,The injection is flagged, and not followed.
+Dialogue: 0,0:01:03.07,0:01:07.57,C,,0,0,0,,The badge comes straight from the SDK's inference source.
+Dialogue: 0,0:01:08.27,0:01:10.02,C,,0,0,0,,The model only proposes.
+Dialogue: 0,0:01:10.18,0:01:12.61,C,,0,0,0,,A deterministic policy engine decides.
+Dialogue: 0,0:01:12.82,0:01:15.13,C,,0,0,0,,Order 1002 has already shipped, so
+Dialogue: 0,0:01:15.15,0:01:17.05,C,,0,0,0,,editing it is stamped: DENY.
+Dialogue: 0,0:01:17.29,0:01:20.72,C,,0,0,0,,The decision trace explains every step, and labels what came
+Dialogue: 0,0:01:20.74,0:01:23.66,C,,0,0,0,,from the model, from fixed rules, or from a person.
+Dialogue: 0,0:01:24.44,0:01:26.50,C,,0,0,0,,Risky actions wait for a human.
+Dialogue: 0,0:01:26.73,0:01:28.40,C,,0,0,0,,An agent requests a refund.
+Dialogue: 0,0:01:28.70,0:01:30.34,C,,0,0,0,,Only a manager can approve it.
+Dialogue: 0,0:01:30.54,0:01:33.44,C,,0,0,0,,Nothing real is sent or refunded in this demo.
+Dialogue: 0,0:01:34.21,0:01:37.41,C,,0,0,0,,In the Hybrid AI Lab, the same case runs three ways:
+Dialogue: 0,0:01:37.43,0:01:39.83,C,,0,0,0,,on-device only, cloud only, and hybrid.
+Dialogue: 0,0:01:39.99,0:01:42.87,C,,0,0,0,,In Local only mode, the SDK is handed only
+Dialogue: 0,0:01:42.89,0:01:45.57,C,,0,0,0,,the on-device mode, so the cloud run is
+Dialogue: 0,0:01:45.59,0:01:47.99,C,,0,0,0,,blocked by the routing rule itself.
+Dialogue: 0,0:01:48.78,0:01:50.87,C,,0,0,0,,The Trust Center backs every claim.
+Dialogue: 0,0:01:51.06,0:01:53.70,C,,0,0,0,,Forty synthetic scenarios, real inference,
+Dialogue: 0,0:01:53.72,0:01:55.73,C,,0,0,0,,every rate with its denominator.
+Dialogue: 0,0:01:55.96,0:01:59.27,C,,0,0,0,,A separate test attempts 77 forbidden approvals.
+Dialogue: 0,0:01:59.45,0:02:01.11,C,,0,0,0,,Every one is refused.
+Dialogue: 0,0:02:01.72,0:02:04.47,C,,0,0,0,,And before changing a policy, managers can simulate
+Dialogue: 0,0:02:04.49,0:02:06.65,C,,0,0,0,,it, and see which cases it would affect.
+Dialogue: 0,0:02:07.38,0:02:10.45,C,,0,0,0,,Intelligent commerce operations shouldn't depend on
+Dialogue: 0,0:02:10.47,0:02:12.94,C,,0,0,0,,one device, one model, or one connection.
+Dialogue: 0,0:02:13.20,0:02:13.91,C,,0,0,0,,Bimoda.
+Dialogue: 0,0:02:14.09,0:02:17.38,C,,0,0,0,,Commerce intelligence, on-device and in the cloud.

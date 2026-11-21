@@ -1,0 +1,47 @@
+Every day, online stores get messages like these.
+Change my address, after the order has shipped.
+Refund me now.
+And sometimes, a hidden instruction aimed at the AI itself.
+Rigid automation breaks on cases like these.
+And sending every customer message to a cloud model raises privacy and connectivity questions.
+
+This is Bimoda.
+A hybrid AI operations copilot, built on Firebase AI Logic.
+On the device when possible.
+In the cloud when needed.
+And it always tells you which.
+
+Start on the landing page.
+Switch the privacy mode, and the app's real routing code responds.
+Local only blocks the cloud route.
+Hybrid tapes over names, phones and addresses before anything may leave the browser.
+
+Now, a real case. Order 1006.
+The customer's message hides a prompt injection, demanding a $5,000 refund.
+One click, and Firebase AI Logic returns validated JSON: intent, urgency, and a proposed action.
+The injection is flagged, and not followed.
+The badge comes straight from the SDK's inference source.
+
+The model only proposes.
+A deterministic policy engine decides.
+Order 1002 has already shipped, so editing it is stamped: DENY.
+The decision trace explains every step, and labels what came from the model, from fixed rules, or from a person.
+
+Risky actions wait for a human.
+An agent requests a refund.
+Only a manager can approve it.
+Nothing real is sent or refunded in this demo.
+
+In the Hybrid AI Lab, the same case runs three ways: on-device only, cloud only, and hybrid.
+In Local only mode, the SDK is handed only the on-device mode, so the cloud run is blocked by the routing rule itself.
+
+The Trust Center backs every claim.
+Forty synthetic scenarios, real inference, every rate with its denominator.
+A separate test attempts 77 forbidden approvals.
+Every one is refused.
+
+And before changing a policy, managers can simulate it, and see which cases it would affect.
+
+Intelligent commerce operations shouldn't depend on one device, one model, or one connection.
+Bimoda.
+Commerce intelligence, on-device and in the cloud.
