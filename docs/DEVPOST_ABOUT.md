@@ -20,6 +20,7 @@ Bimoda is a hybrid AI operations copilot for e-commerce teams. Try it at **https
 - **Proves its claims.** The Trust Center runs 40 synthetic scenarios through real inference and reports every rate with its denominator, plus an independent test that tries forbidden approvals and requires every attempt to be refused.
 - **Hybrid AI Lab and Privacy Evidence.** Run the same case as on-device only, cloud only and hybrid, and see the routing plan and a redaction preview for each privacy mode.
 - **What-if policy simulator.** Preview which scenarios a policy change would affect before applying it.
+- **Two platforms, one set of rules.** Besides the web app there is a native Android client (Kotlin, Jetpack Compose) in the same repository. It uses the Firebase AI Logic hybrid SDK for Android and shares the policy engine, the privacy routing and the redaction rules with the web app.
 
 ## How we used Firebase AI Logic 🔥
 
@@ -30,11 +31,13 @@ Hybrid inference is the core of the product, not an add-on:
 - Structured output uses `responseConstraint` on-device and JSON mode in the cloud, then Zod validates every answer.
 - A privacy gate sits in front of the SDK: **Local only** hands the SDK only `ONLY_ON_DEVICE`; cloud-capable requests are redacted (names, phones, emails, addresses) unless the user consents.
 
+**On Android**, the client calls `generativeModel(..., onDeviceConfig = OnDeviceConfig(mode = ...))` from `firebase-ai` with the same four modes, reads `response.inferenceSource`, and checks and downloads the local model through `FirebaseAIOnDevice` (Gemini Nano via AICore). The same privacy gate runs before the SDK call: in Local only a cloud run is blocked before it reaches the SDK.
+
 Other Firebase products: **App Check** (reCAPTCHA Enterprise), **Authentication**, **Cloud Firestore** with security rules (approvals, AI run metadata, audit log and policy for signed-in users), **Remote Config** (cloud model, timeout and an operator switch for cloud inference) and **Hosting**.
 
 ## How we built it 🛠️
 
-React, TypeScript and Vite with Tailwind CSS; Zod for validation; Playwright and Vitest for tests. The interface is designed around the subject: the open case is a paper docket, decisions are stamps, and the route is drawn solid or dashed. It works offline as a PWA and has an Arabic (RTL) interface in beta.
+React, TypeScript and Vite with Tailwind CSS; Zod for validation; Playwright and Vitest for tests. The interface is designed around the subject: the open case is a paper docket, decisions are stamps, and the route is drawn solid or dashed. The web app works offline as a PWA and has an Arabic (RTL) interface in beta. The Android client is built with Kotlin and Jetpack Compose and carries the same visual language.
 
 ## Challenges 🧩
 
@@ -48,16 +51,18 @@ React, TypeScript and Vite with Tailwind CSS; Zod for validation; Playwright and
 - Real on-device and cloud inference through the SDK on desktop Chrome, with the source read from the response.
 - A 40-scenario cloud evaluation on the live site: 40/40 valid answers, intent accuracy 100% (40/40) against our own labels, prompt-injection recall 6/6. It is a small synthetic sanity suite, not a benchmark, and results vary slightly between runs.
 - 46 live checks of the Firestore security rules, 121 unit tests and 38 end-to-end tests.
+- Android, on the emulator: cloud inference through the SDK, the hybrid fallback (an on-device-first request answered by the cloud when no local model exists), the Local only block, policy stamps and role-gated approval, plus 10 unit tests.
 
 ## Known limits
 
 - The policy decision is computed in the browser; Firestore rules enforce roles and the approval state machine but cannot recompute the decision. Server-side re-evaluation is the next step.
 - Orders and conversations are synthetic and live in the app, not in Firestore.
 - The 40-scenario evaluation has been completed in cloud mode only.
+- On Android, on-device inference with Gemini Nano has not been verified on a physical device: the emulator has no AICore, so the SDK reports the local model as unavailable there. The Android client covers cases, analysis, policy, approval and the Lab; sign-in, sync, the Trust Center and the simulator are web only.
 
 ## What's next 🌍
 
-Server-side policy enforcement, integrations with real store and carrier systems behind the same approval gates, a full on-device evaluation, and native Android and iOS clients using Firebase AI Logic.
+Server-side policy enforcement, integrations with real store and carrier systems behind the same approval gates, a full on-device evaluation, on-device verification on supported Android phones, and an iOS client using Apple Foundation Models through Firebase AI Logic.
 
 **Bimoda — Commerce intelligence, on-device and in the cloud.**
 
